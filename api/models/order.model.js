@@ -15,6 +15,10 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
         total_quantity: {
           type: DataTypes.INTEGER,
           defaultValue: 0
+        },
+        status: {
+          type: DataTypes.INTEGER,
+          defaultValue: 1
         }
       },
       {

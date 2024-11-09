@@ -59,6 +59,8 @@ module.exports = (app) => {
   // get All Oders
   router.get("/order/all", verify, orderController.getAllOder);
 
+  router.post("/order/update", verify, orderController.updateOrder)
+
   // get order by user id
   router.get("/order/user/:id", verify, orderController.getOders);
 

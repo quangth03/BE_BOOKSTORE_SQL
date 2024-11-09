@@ -89,7 +89,18 @@ module.exports = {
             });
         });
     },
-
+    updateOrder: (req, res) => {
+        let { id, ...data } = req.body;
+        db.order.update(data, { where: { id: id } })
+        .then(data => {
+            res.send(data);
+        })
+        .catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while retrieving Order."
+            });
+        });
+    },
     getOders : async (req, res) => {
         let user_id = null
         if( req.isAdmin ) {
