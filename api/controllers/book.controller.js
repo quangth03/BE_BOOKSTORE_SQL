@@ -211,6 +211,7 @@ module.exports = {
           author: {
             [db.Op.substring]: author,
           },
+          isDelete: 0,
           title: {
             [db.Op.substring]: title,
           },
