@@ -7,7 +7,6 @@ const router = require("express").Router();
 const verify = require("../middlewares/authJwt").verifyToken_Admin;
 
 module.exports = (app) => {
-
   // get profile
   router.get("/profile", verify, userController.findByid);
 
@@ -28,16 +27,15 @@ module.exports = (app) => {
 
   // delete category
   router.delete("/categories/:id", verify, categoryController.delete);
-
   // get all categories
   router.get("/categories", categoryController.findAll);
 
   // Create a new Book
-  router.post("/books", verify,  bookController.create);
+  router.post("/books", verify, bookController.create);
 
   // Update a Book with id
   router.put("/books/id/:id", verify, bookController.update);
-
+  router.put("/books/restore/:id", verify, bookController.restore);
   // find books by category
   router.post("/books/category", bookController.findByCategory);
 
@@ -45,21 +43,26 @@ module.exports = (app) => {
   router.delete("/books/:id", verify, bookController.delete);
 
   // Retrieve all Books
-  router.get("/books", bookController.findAll);
+  router.get("/books", bookController.adminFindAll);
 
   // find a single book with id
   router.get("/books/:id", bookController.findByid);
 
   // add category to book
-  router.post("/books/:id/categories",  bookController.addBook_Category);
+  router.post("/books/:id/categories", bookController.addBook_Category);
 
   // remove category from book
-  router.delete("/books/:id/categories", verify, bookController.removeBook_Category);
+
+  router.delete(
+    "/books/:id/categories",
+    verify,
+    bookController.removeBook_Category
+  );
 
   // get All Oders
   router.get("/order/all", verify, orderController.getAllOder);
 
-  router.post("/order/update", verify, orderController.updateOrder)
+  router.post("/order/update", verify, orderController.updateOrder);
 
   // get order by user id
   router.get("/order/user/:id", verify, orderController.getOders);
@@ -73,6 +76,5 @@ module.exports = (app) => {
   // get category by id
   router.get("/categories/:id", categoryController.findById);
 
-
-  app.use('/admin', router);
+  app.use("/admin", router);
 };
