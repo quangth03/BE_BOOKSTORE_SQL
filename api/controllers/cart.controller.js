@@ -169,6 +169,7 @@ module.exports = {
             "description",
             "publication_date",
             "image",
+            "quantity",
           ],
           through: { attributes: ["quantity", "total"] },
         },
