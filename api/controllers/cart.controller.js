@@ -68,12 +68,13 @@ module.exports = {
             message: "Item was removed successfully!",
           });
         } else {
+          const sellPrice = book.price * (1 - book.discount / 100);
           await db.cart_details.update(
             {
               quantity: parseInt(cart_details.quantity) + quantity,
               total:
                 parseInt(cart_details.total) +
-                parseInt(parseInt(book.price) * quantity),
+                parseInt(parseInt(sellPrice) * quantity),
             },
             {
               where: {
@@ -85,7 +86,7 @@ module.exports = {
 
           await db.cart.update(
             {
-              total: cart.total + book.price * quantity,
+              total: cart.total + sellPrice * quantity,
               total_quantity: cart.total_quantity + quantity,
             },
             {
@@ -164,6 +165,7 @@ module.exports = {
             "title",
             "author",
             "price",
+            "discount",
             "description",
             "publication_date",
             "image",
