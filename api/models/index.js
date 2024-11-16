@@ -33,6 +33,7 @@ db.order = require("./order.model.js")(sequelize, Sequelize, DataTypes);
 db.order_details = require("./order_details.model.js")(sequelize, Sequelize, DataTypes);
 db.category = require("./category.model.js")(sequelize, Sequelize, DataTypes);
 db.book_category = require("./book_category.model.js")(sequelize, Sequelize, DataTypes);
+db.comment = require("./comment.model.js")(sequelize, Sequelize, DataTypes);
 
 // RELATIONSHIPS
 // Books vs Category
@@ -40,12 +41,12 @@ db.books.belongsToMany(db.category, { through: db.book_category, foreignKey: 'bo
 db.category.belongsToMany(db.books, { through: db.book_category, foreignKey: 'category_id' });
 
 // Books vs Cart
-db.books.belongsToMany(db.cart, { through: db.cart_details ,foreignKey: 'book_id' });
-db.cart.belongsToMany(db.books, { through: db.cart_details ,foreignKey: 'cart_id' });
+db.books.belongsToMany(db.cart, { through: db.cart_details, foreignKey: 'book_id' });
+db.cart.belongsToMany(db.books, { through: db.cart_details, foreignKey: 'cart_id' });
 
 // Books vs Order
-db.books.belongsToMany(db.order, { through: db.order_details ,foreignKey: 'book_id' });
-db.order.belongsToMany(db.books, { through: db.order_details ,foreignKey: 'order_id' });
+db.books.belongsToMany(db.order, { through: db.order_details, foreignKey: 'book_id' });
+db.order.belongsToMany(db.books, { through: db.order_details, foreignKey: 'order_id' });
 
 // User vs cart
 db.user.hasMany(db.cart, { foreignKey: 'user_id' });
@@ -55,4 +56,11 @@ db.cart.belongsTo(db.user, { foreignKey: 'user_id' });
 db.user.hasMany(db.order, { foreignKey: 'user_id' });
 db.order.belongsTo(db.user, { foreignKey: 'user_id' });
 
+// comment vs user
+db.user.hasMany(db.order, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+db.comment.belongsTo(db.user, { foreignKey: 'user_id' })
+
+// comment vs book
+db.books.hasMany(db.comment, { foreignKey: 'book_id', onDelete: 'CASCADE' });
+db.comment.belongsTo(db.books, { foreignKey: 'book_id' });
 module.exports = db;
