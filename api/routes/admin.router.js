@@ -3,6 +3,7 @@ const bookController = require("../controllers/book.controller");
 const categoryController = require("../controllers/category.controller");
 const orderController = require("../controllers/order.controller");
 const cartController = require("../controllers/cart.controller");
+const dashboardController = require("../controllers/dashboard.controller");
 const router = require("express").Router();
 const verify = require("../middlewares/authJwt").verifyToken_Admin;
 
@@ -28,7 +29,7 @@ module.exports = (app) => {
   // delete category
   router.delete("/categories/:id", verify, categoryController.delete);
   // get all categories
-  router.get("/categories", categoryController.findAll);
+  router.get("/categories", categoryController.adminFindAll);
 
   // Create a new Book
   router.post("/books", verify, bookController.create);
@@ -75,6 +76,7 @@ module.exports = (app) => {
 
   // get category by id
   router.get("/categories/:id", categoryController.findById);
+  router.get("/stats", verify, dashboardController.getDashboardStats);
 
   app.use("/admin", router);
 };

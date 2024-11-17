@@ -7,51 +7,47 @@ const router = require("express").Router();
 const verify = require("../middlewares/authJwt").verifyToken_User;
 
 module.exports = (app) => {
+  // get profile
+  router.get("/profile", verify, userController.findByid);
 
-    // get profile
-    router.get("/profile", verify, userController.findByid);
+  // update user
+  router.put("/profile", verify, userController.updateProfile);
 
-    // update user
-    router.put("/profile", verify, userController.updateProfile);
+  // Retrieve all Books
+  router.get("/books", bookController.findAll);
 
-    // Retrieve all Books
-    router.get("/books", bookController.findAll);
+  // find a single book with id
+  router.get("/books/id/:id", bookController.findByid);
 
-    // find a single book with id
-    router.get("/books/id/:id", bookController.findByid);
+  // find books by category
+  router.post("/books/category", bookController.findByCategory);
 
-    // find books by category
-    router.post("/books/category", bookController.findByCategory);
+  // get all categories
+  router.get("/categories", categoryController.findAll);
 
-    // get all categories
-    router.get("/categories", categoryController.findAll);
+  // get cart
+  router.get("/cart", verify, cartController.getCart);
 
-    // get cart
-    router.get("/cart", verify, cartController.getCart);
+  // add item to cart
+  router.post("/cart", verify, cartController.addItem);
 
-    // add item to cart
-    router.post("/cart", verify, cartController.addItem);
+  // remove item from cart
+  router.delete("/cart", verify, cartController.removeItem);
 
-    // remove item from cart
-    router.delete("/cart", verify, cartController.removeItem);
+  // create order
+  router.post("/order", verify, orderController.createOder);
 
-    // create order
-    router.post("/order", verify, orderController.createOder);
+  // delete order
+  // router.delete("/order", verify, orderController.deleteOrder);
 
-    // delete order
-    // router.delete("/order", verify, orderController.deleteOrder);
-    
-    // get all orders
-    router.get("/order", verify, orderController.getOders);
+  // get all orders
+  router.get("/order", verify, orderController.getOders);
 
-    // get order by id
-    router.get("/order/:id", verify, orderController.getOderDetails);
+  // get order by id
+  router.get("/order/:id", verify, orderController.getOderDetails);
 
-    // get category by id
-    router.get("/categories/:id", categoryController.findById);
+  // get category by id
+  router.get("/categories/:id", categoryController.findById);
 
-
-
-    app.use('/user', router);
+  app.use("/user", router);
 };
-  

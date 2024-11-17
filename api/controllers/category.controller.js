@@ -128,7 +128,21 @@ module.exports = {
   },
 
   findAll: async (req, res) => {
-    const data = await db.category.findAll();
+    const data = await db.category.findAll({
+      where: {
+        isDelete: 0,
+      },
+    });
+    if (!data) {
+      return res.status(400).send({
+        message: "Category not found!",
+      });
+    }
+    res.status(200).json(data);
+  },
+
+  adminFindAll: async (req, res) => {
+    const data = await db.category.findAll({});
     if (!data) {
       return res.status(400).send({
         message: "Category not found!",
