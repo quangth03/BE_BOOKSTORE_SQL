@@ -45,6 +45,7 @@ db.book_category = require("./book_category.model.js")(
   Sequelize,
   DataTypes
 );
+db.comment = require("./comment.model.js")(sequelize, Sequelize, DataTypes);
 
 // RELATIONSHIPS
 // Books vs Category
@@ -85,4 +86,17 @@ db.cart.belongsTo(db.user, { foreignKey: "user_id" });
 db.user.hasMany(db.order, { foreignKey: "user_id" });
 db.order.belongsTo(db.user, { foreignKey: "user_id" });
 
+// comment vs user
+db.user.hasMany(db.order, { foreignKey: "user_id", onDelete: "CASCADE" });
+db.comment.belongsTo(db.user, { foreignKey: "user_id" });
+
+// comment vs book
+db.books.hasMany(db.comment, { foreignKey: "book_id", onDelete: "CASCADE" });
+db.comment.belongsTo(db.books, { foreignKey: "book_id" });
+
+//Book Quan hệ với bảng OrderDetail
+db.books.hasMany(db.order_details, { foreignKey: "book_id" });
+db.order_details.belongsTo(db.books, {
+  foreignKey: "book_id",
+});
 module.exports = db;

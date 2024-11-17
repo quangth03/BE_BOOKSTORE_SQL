@@ -48,6 +48,10 @@ module.exports = (app) => {
 
   // get category by id
   router.get("/categories/:id", categoryController.findById);
+  // get category by id
+  router.get("/comment/book/:id", bookController.commentFindByBook);
+  router.get("/comment/check/book/:id", verify, bookController.checkComment);
+  router.post("/comment", verify, bookController.comment);
 
   app.use("/user", router);
 };
