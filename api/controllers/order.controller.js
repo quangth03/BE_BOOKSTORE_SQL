@@ -1,4 +1,5 @@
 const db = require("../models");
+const { createPayment } = require("../utils/payment");
 const { findAll } = require("./category.controller");
 
 module.exports = {
@@ -63,18 +64,24 @@ module.exports = {
       db.cart.destroy({
         where: { id: cart.id },
       });
+
     } catch (error) {
       return res.status(500).send({
         message: err.message || "Some error occurred while destroy the cart.",
       });
     }
 
-    res.status(200).send(order);
+    const paymentRS = await createPayment(order.id, order.total)
+    if (!paymentRS) {
+      return res.status(500).send({
+        message: err.message || "payment error",
+      });
+    }
+    res.status(200).send(paymentRS);
   },
 
   deleteOrder: (req, res) => {
     const id = req.params.id;
-
     db.order
       .destroy({
         where: { id: id },
@@ -174,4 +181,34 @@ module.exports = {
         });
       });
   },
+  createPay: async (req, res) => {
+    try {
+      // check order id in user
+      const order = await db.order.findOne({ where: { user_id: req.user_id, id: req.body.id } })
+      if (!order.id) {
+        return res.status(400).message('order not found')
+      }
+      const paymentRS = await createPayment(order.id, order.total)
+      if (!paymentRS) {
+        return res.status(500).send({
+          message: err.message || "payment error",
+        });
+      }
+      res.status(200).send(paymentRS);
+
+    } catch (error) {
+      return res.status(500).message('server error')
+    }
+
+  },
+  payCallback: async (req, res) => {
+    try {
+      if(req.body.resultCode == 0){
+       await db.order.update({status: 2}, { where: { id: req.body.orderId } })
+      }
+      return res.status(200).json(req.body)
+    } catch (error) {
+      return res.status(500).message('server error')
+    }
+  }
 };

@@ -441,8 +441,6 @@ module.exports = {
 
   commentFindByBook: (req, res) => {
     const id = parseInt(req.params.id, 10);
-    console.log("booooo", id);
-    console.log("booooo", typeof id);
     db.comment
       .findAll({
         where: { book_id: id },
@@ -451,7 +449,6 @@ module.exports = {
       })
       .then((data) => {
         if (data) {
-          console.log("rs ==>", data);
           res.json(data);
         } else {
           res.send({
