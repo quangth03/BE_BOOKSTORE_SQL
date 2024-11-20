@@ -125,14 +125,14 @@ module.exports = {
     try {
       const book_id = req.params.id;
       const categories = req.body.id;
-  
+
       // Kiểm tra nếu không có danh sách thể loại hoặc không phải mảng
       if (!Array.isArray(categories) || categories.length === 0) {
         return res.status(400).send({
           message: "Categories must be a non-empty array.",
         });
       }
-  
+
       // Kiểm tra xem sách có tồn tại không
       const bookExists = await db.books.findOne({ where: { id: book_id } });
       if (!bookExists) {
@@ -140,9 +140,9 @@ module.exports = {
           message: "Book not found.",
         });
       }
-  
+
       let unSuccess = [];
-  
+
       // Lặp qua danh sách thể loại
       for (const item of categories) {
         const category = await db.category.findByPk(item);
@@ -150,7 +150,7 @@ module.exports = {
           const data = await db.book_category.findOne({
             where: { book_id: book_id, category_id: item },
           });
-  
+
           // Nếu chưa tồn tại, thêm mới
           if (!data) {
             await db.book_category.create({
@@ -164,7 +164,7 @@ module.exports = {
           unSuccess.push(item); // Không tìm thấy thể loại
         }
       }
-  
+
       // Trả về thông báo nếu có thất bại
       if (unSuccess.length > 0) {
         return res.status(400).send({
@@ -172,7 +172,7 @@ module.exports = {
           data: unSuccess,
         });
       }
-  
+
       // Thành công
       return res.status(200).send({
         message: "Categories added successfully.",
@@ -185,7 +185,6 @@ module.exports = {
       });
     }
   },
-  
 
   removeBook_Category: (req, res) => {
     const book_id = req.params.id;
@@ -304,7 +303,7 @@ module.exports = {
       to = temp;
     }
     if (!page || page <= 0) page = 1;
-    if (!limit || limit <= 0) limit = 10;
+    if (!limit || limit <= 0) limit = 1000;
     sortD = sortD ? sortD : "ASC";
     sortBy = sortBy ? sortBy : "id";
 
