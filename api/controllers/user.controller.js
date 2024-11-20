@@ -207,7 +207,7 @@ module.exports = {
       }
 
       // Tạo mật khẩu ngẫu nhiên
-      const newPassword = crypto.randomBytes(8).toString("hex");
+      const newPassword = crypto.randomBytes(4).toString("hex");
       const salt = bcrypt.genSaltSync(7);
       const hashedPassword = bcrypt.hashSync(newPassword, salt);
 
@@ -217,12 +217,11 @@ module.exports = {
         { where: { id: user.id } }
       );
 
-      // Gửi mật khẩu mới qua email
       const transporter = nodemailer.createTransport({
         service: "Gmail",
         auth: {
-          user: "lequangsang08102003@gmail.com", // Thay bằng email của bạn
-          pass: "oybv dfcq egmp tloa", // Thay bằng mật khẩu email của bạn
+          user: "lequangsang08102003@gmail.com", 
+          pass: "oybv dfcq egmp tloa", 
         },
       });
 
