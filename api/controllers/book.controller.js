@@ -259,7 +259,10 @@ module.exports = {
         },
         offset: (page - 1) * limit,
         limit: limit,
-        order: [[sortBy, sortD]],
+        order: [
+          ["createdAt", "DESC"], // Thêm phần này để sắp xếp theo ngày tạo (mới nhất)
+          [sortBy, sortD], // Giữ phần sắp xếp theo các tiêu chí khác (nếu có)
+        ],
       })
       .then((data) => {
         if (data.length > 0) {
