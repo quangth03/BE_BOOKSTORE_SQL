@@ -186,7 +186,9 @@ module.exports = {
       // check order id in user
       const order = await db.order.findOne({ where: { user_id: req.user_id, id: req.body.id } })
       if (!order.id) {
-        return res.status(400).message('order not found')
+        return res.status(400).send({
+          message: "Order not found!",
+        })
       }
       const paymentRS = await createPayment(order.id, order.total)
       if (!paymentRS) {
@@ -197,7 +199,9 @@ module.exports = {
       res.status(200).send(paymentRS);
 
     } catch (error) {
-      return res.status(500).message('server error')
+      return res.status(500).send({
+        message: "serve not error!",
+      })
     }
 
   },
@@ -208,7 +212,9 @@ module.exports = {
       }
       return res.status(200).json(req.body)
     } catch (error) {
-      return res.status(500).message('server error')
+      return res.status(500).send({
+        message: "Order not found!",
+      })
     }
   }
 };
