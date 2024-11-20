@@ -32,6 +32,30 @@ exports.getDashboardStats = async (req, res) => {
     }));
     const totalRevenue = await db.order.sum("total");
 
+    const topSellingBooks = await db.order_details.findAll({
+      attributes: [
+        [db.sequelize.col("book.title"), "title"], // Lấy tên sách
+        [
+          db.sequelize.fn("SUM", db.sequelize.col("order_detail.quantity")),
+          "total_sold",
+        ], // Tổng số lượng bán
+      ],
+      include: [
+        {
+          model: db.books,
+          attributes: [],
+        },
+      ],
+      group: ["book_id"],
+      order: [[db.sequelize.literal("total_sold"), "DESC"]],
+      limit: 5,
+    });
+
+    const topBook = topSellingBooks.map((item) => ({
+      title: item.get("title"),
+      totalSold: item.get("total_sold"),
+    }));
+
     res.json({
       users: userCount,
       orders: orderCount,
@@ -39,6 +63,7 @@ exports.getDashboardStats = async (req, res) => {
       genres: genreCount,
       revenueByMonth: revenueData,
       totalRevenue: totalRevenue,
+      topBook: topBook,
     });
   } catch (error) {
     console.error("Lỗi khi lấy thống kê:", error.message);

@@ -53,5 +53,6 @@ module.exports = (app) => {
   router.get("/comment/check/book/:id", verify, bookController.checkComment);
   router.post("/comment", verify, bookController.comment);
 
+
   app.use("/user", router);
 };

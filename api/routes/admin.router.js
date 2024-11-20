@@ -76,7 +76,7 @@ module.exports = (app) => {
 
   // get category by id
   router.get("/categories/:id", categoryController.findById);
-  router.get("/stats", verify, dashboardController.getDashboardStats);
+  router.get("/stats", dashboardController.getDashboardStats);
 
   app.use("/admin", router);
 };

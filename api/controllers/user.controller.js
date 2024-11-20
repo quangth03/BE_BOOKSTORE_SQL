@@ -2,6 +2,8 @@ const db = require("../models");
 const jwt = require("jsonwebtoken");
 const config = require("../config/auth.config");
 const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 
 module.exports = {
   signup: async (req, res) => {
@@ -187,6 +189,59 @@ module.exports = {
       return res
         .status(500)
         .send({ message: "An error occurred while updating password." });
+    }
+  },
+  forgotPassword: async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).send({ message: "Email is required." });
+    }
+
+    try {
+      // Tìm người dùng theo email
+      const user = await db.user.findOne({ where: { email } });
+
+      if (!user) {
+        return res.status(404).send({ message: "User not found." });
+      }
+
+      // Tạo mật khẩu ngẫu nhiên
+      const newPassword = crypto.randomBytes(8).toString("hex");
+      const salt = bcrypt.genSaltSync(7);
+      const hashedPassword = bcrypt.hashSync(newPassword, salt);
+
+      // Cập nhật mật khẩu mới trong cơ sở dữ liệu
+      await db.user.update(
+        { password: hashedPassword },
+        { where: { id: user.id } }
+      );
+
+      // Gửi mật khẩu mới qua email
+      const transporter = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+          user: "lequangsang08102003@gmail.com", // Thay bằng email của bạn
+          pass: "oybv dfcq egmp tloa", // Thay bằng mật khẩu email của bạn
+        },
+      });
+
+      await transporter.sendMail({
+        from: '"Book Store" <your_email@gmail.com>',
+        to: email,
+        subject: "Mật khẩu Mới Của Bạn",
+        html: `<p>Mật khẩu của bạn đã được đặt lại. Đây là mật khẩu mới của bạn:</p>
+               <p><strong>${newPassword}</strong></p>
+               <p>Vui lòng đăng nhập và thay đổi mật khẩu ngay lập tức.</p>`,
+      });
+
+      res.status(200).send({
+        message: "A new password has been sent to your email.",
+      });
+    } catch (error) {
+      res.status(500).send({
+        message: "An error occurred while processing your request.",
+      });
     }
   },
 };

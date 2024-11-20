@@ -13,6 +13,7 @@ module.exports = (app) => {
 
     // change password
     router.put("/changepassword", verify, userController.changePassword);
+    router.post("/forgot-password", userController.forgotPassword);
 
     app.use('/auth', router);
 }

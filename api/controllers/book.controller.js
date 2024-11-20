@@ -122,52 +122,70 @@ module.exports = {
   },
 
   addBook_Category: async (req, res) => {
-    const book_id = req.params.id;
-    const categories = req.body.id;
-    let unSuccess = [];
-
-    if (categories.length == 0) {
-      return res.status(400).send({
-        message: "Categories can not be empty.",
-      });
-    }
-
-    if (!db.books.findOne({ where: { id: book_id } })) {
-      return res.status(400).send({
-        message: "Book not found.",
-      });
-    }
-
-    for (const item of categories) {
-      let cate = await db.category.findByPk(item);
-      if (cate != null) {
-        let data = await db.book_category.findOne({
-          where: { book_id: book_id, category_id: item },
+    try {
+      const book_id = req.params.id;
+      const categories = req.body.id;
+  
+      // Kiểm tra nếu không có danh sách thể loại hoặc không phải mảng
+      if (!Array.isArray(categories) || categories.length === 0) {
+        return res.status(400).send({
+          message: "Categories must be a non-empty array.",
         });
-        if (data == null) {
-          await db.book_category.create({
-            book_id: book_id,
-            category_id: item,
-          });
-        } else {
-          unSuccess.push(item);
-        }
-      } else {
-        unSuccess.push(item);
       }
-    }
-
-    if (unSuccess.length > 0) {
-      return await res.status(400).send({
-        message: "Categories not found or already exists.",
-        data: unSuccess,
+  
+      // Kiểm tra xem sách có tồn tại không
+      const bookExists = await db.books.findOne({ where: { id: book_id } });
+      if (!bookExists) {
+        return res.status(400).send({
+          message: "Book not found.",
+        });
+      }
+  
+      let unSuccess = [];
+  
+      // Lặp qua danh sách thể loại
+      for (const item of categories) {
+        const category = await db.category.findByPk(item);
+        if (category) {
+          const data = await db.book_category.findOne({
+            where: { book_id: book_id, category_id: item },
+          });
+  
+          // Nếu chưa tồn tại, thêm mới
+          if (!data) {
+            await db.book_category.create({
+              book_id: book_id,
+              category_id: item,
+            });
+          } else {
+            unSuccess.push(item); // Đã tồn tại
+          }
+        } else {
+          unSuccess.push(item); // Không tìm thấy thể loại
+        }
+      }
+  
+      // Trả về thông báo nếu có thất bại
+      if (unSuccess.length > 0) {
+        return res.status(400).send({
+          message: "Some categories not found or already exist.",
+          data: unSuccess,
+        });
+      }
+  
+      // Thành công
+      return res.status(200).send({
+        message: "Categories added successfully.",
       });
-    } else {
-      await res.status(200).send({
-        message: "successfully",
+    } catch (error) {
+      // Bắt lỗi và phản hồi với thông báo lỗi
+      console.error(error);
+      return res.status(500).send({
+        message: "An error occurred while processing your request.",
       });
     }
   },
+  
 
   removeBook_Category: (req, res) => {
     const book_id = req.params.id;
@@ -418,20 +436,19 @@ module.exports = {
       });
   },
 
-
   commentFindByBook: (req, res) => {
     const id = parseInt(req.params.id, 10);
-    console.log("booooo", id)
-    console.log("booooo", typeof (id))
+    console.log("booooo", id);
+    console.log("booooo", typeof id);
     db.comment
       .findAll({
         where: { book_id: id },
         include: [{ model: db.user }],
-        order: [['createdAt', 'DESC']],
+        order: [["createdAt", "DESC"]],
       })
       .then((data) => {
         if (data) {
-          console.log("rs ==>", data)
+          console.log("rs ==>", data);
           res.json(data);
         } else {
           res.send({
@@ -442,14 +459,11 @@ module.exports = {
   },
 
   comment: (req, res) => {
-    req.body.user_id = req.user_id,
-    db.comment
-      .create(req.body )
-      .then((data) => {
+    (req.body.user_id = req.user_id),
+      db.comment.create(req.body).then((data) => {
         if (data) {
-          console.log("rs ==>", data)
+          console.log("rs ==>", data);
           res.json(data);
-
         } else {
           res.send({
             message: `Cannot find Book with id = ${id}.`,
@@ -458,23 +472,30 @@ module.exports = {
       });
   },
   checkComment: (req, res) => {
-    db.user.findOne({
-      where: { id: req.user_id },
-      include: [{
-        model: db.order,
-        include: [{
-          model: db.books,
-          where: { id: parseInt(req.params.id, 10) }
-        }]
-      }]
-    }).then(user => {
-      if (!user || user.orders.length == 0) {
-        res.json(false);
-      } else {
-        res.json(true);
-      }
-    }).catch(error => {
-      console.error('Lỗi truy vấn:', error);
-    });
+    db.user
+      .findOne({
+        where: { id: req.user_id },
+        include: [
+          {
+            model: db.order,
+            include: [
+              {
+                model: db.books,
+                where: { id: parseInt(req.params.id, 10) },
+              },
+            ],
+          },
+        ],
+      })
+      .then((user) => {
+        if (!user || user.orders.length == 0) {
+          res.json(false);
+        } else {
+          res.json(true);
+        }
+      })
+      .catch((error) => {
+        console.error("Lỗi truy vấn:", error);
+      });
   },
 };
