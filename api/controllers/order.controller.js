@@ -185,7 +185,7 @@ module.exports = {
     try {
       // check order id in user
       const order = await db.order.findOne({ where: { user_id: req.user_id, id: req.body.id } })
-      if (!order.id) {
+      if (!order) {
         return res.status(400).send({
           message: "Order not found!",
         })
