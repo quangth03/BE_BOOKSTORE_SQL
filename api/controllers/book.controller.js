@@ -241,7 +241,10 @@ module.exports = {
         },
         offset: (page - 1) * limit,
         limit: limit,
-        order: [[sortBy, sortD]],
+        order: [
+          ["createdAt", "DESC"], // Thêm phần này để sắp xếp theo ngày tạo (mới nhất)
+          [sortBy, sortD], // Giữ phần sắp xếp theo các tiêu chí khác (nếu có)
+        ],
       })
       .then((data) => {
         if (data.length > 0) {
@@ -418,20 +421,19 @@ module.exports = {
       });
   },
 
-
   commentFindByBook: (req, res) => {
     const id = parseInt(req.params.id, 10);
-    console.log("booooo", id)
-    console.log("booooo", typeof (id))
+    console.log("booooo", id);
+    console.log("booooo", typeof id);
     db.comment
       .findAll({
         where: { book_id: id },
         include: [{ model: db.user }],
-        order: [['createdAt', 'DESC']],
+        order: [["createdAt", "DESC"]],
       })
       .then((data) => {
         if (data) {
-          console.log("rs ==>", data)
+          console.log("rs ==>", data);
           res.json(data);
         } else {
           res.send({
@@ -442,14 +444,11 @@ module.exports = {
   },
 
   comment: (req, res) => {
-    req.body.user_id = req.user_id,
-    db.comment
-      .create(req.body )
-      .then((data) => {
+    (req.body.user_id = req.user_id),
+      db.comment.create(req.body).then((data) => {
         if (data) {
-          console.log("rs ==>", data)
+          console.log("rs ==>", data);
           res.json(data);
-
         } else {
           res.send({
             message: `Cannot find Book with id = ${id}.`,
@@ -458,23 +457,30 @@ module.exports = {
       });
   },
   checkComment: (req, res) => {
-    db.user.findOne({
-      where: { id: req.user_id },
-      include: [{
-        model: db.order,
-        include: [{
-          model: db.books,
-          where: { id: parseInt(req.params.id, 10) }
-        }]
-      }]
-    }).then(user => {
-      if (!user || user.orders.length == 0) {
-        res.json(false);
-      } else {
-        res.json(true);
-      }
-    }).catch(error => {
-      console.error('Lỗi truy vấn:', error);
-    });
+    db.user
+      .findOne({
+        where: { id: req.user_id },
+        include: [
+          {
+            model: db.order,
+            include: [
+              {
+                model: db.books,
+                where: { id: parseInt(req.params.id, 10) },
+              },
+            ],
+          },
+        ],
+      })
+      .then((user) => {
+        if (!user || user.orders.length == 0) {
+          res.json(false);
+        } else {
+          res.json(true);
+        }
+      })
+      .catch((error) => {
+        console.error("Lỗi truy vấn:", error);
+      });
   },
 };
