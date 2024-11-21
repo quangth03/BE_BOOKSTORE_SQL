@@ -52,6 +52,8 @@ module.exports = (app) => {
   router.get("/comment/book/:id", bookController.commentFindByBook);
   router.get("/comment/check/book/:id", verify, bookController.checkComment);
   router.post("/comment", verify, bookController.comment);
+  router.post("/createPay", verify, orderController.createPay)
+  router.post("/momoCallBack", orderController.payCallback)
 
 
   app.use("/user", router);
