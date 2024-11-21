@@ -171,7 +171,7 @@ module.exports = {
             "image",
             "quantity",
           ],
-          through: { attributes: ["quantity", "total"] },
+          through: { attributes: ["quantity", "total", "createdAt"] },
         },
       ],
     });
