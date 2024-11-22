@@ -28,7 +28,7 @@ const generateSignature = (rawSignature) => {
 
 
 const createRawData = (orderId, amount) => {
-  const requestId = `${orderId}${new Date().getTime()}`;
+  const requestId = orderId;
 
   return {
     amount,
@@ -40,6 +40,9 @@ const createRawData = (orderId, amount) => {
 
 const createRawSignature = (orderId, amount, requestId) => {
   return `accessKey=${defaultParams.accessKey}&amount=${amount}&extraData=${defaultParams.extraData}&ipnUrl=${defaultParams.ipnUrl}&orderId=${orderId}&orderInfo=${defaultParams.orderInfo}&partnerCode=${defaultParams.partnerCode}&redirectUrl=${defaultParams.redirectUrl}&requestId=${requestId}&requestType=${defaultParams.requestType}`;
+};
+const createRawSignature2 = (orderId) => {
+  return `accessKey=${defaultParams.accessKey}&orderId=${orderId}&partnerCode=${defaultParams.partnerCode}&requestId=${orderId}`;
 };
 
 
@@ -59,10 +62,41 @@ const createPayment = async (orderId, amount) => {
   try {
     const response = await axios(options);
     if (response.status === 200) {
-        return response.data;  
-      } else {
-        return null;  
-      }
+      return response.data;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('Error occurred while sending payment request:', error.message || error);
+    throw new Error(`Payment request failed: ${error.message || error}`);
+  }
+};
+
+const getPaymented = async (orderId) => {
+  const requestBody = {
+    partnerCode: "MOMO",
+    requestId: orderId,
+    orderId: orderId,
+    lang: "vi",
+    signature: generateSignature(createRawSignature2(orderId)),
+  };
+  const options = {
+    method: 'POST',
+    url: 'https://test-payment.momo.vn/v2/gateway/api/query',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(JSON.stringify(requestBody)),
+    },
+    data: requestBody,
+  };
+
+  try {
+    const response = await axios(options);
+    if (response.status === 200) {
+      return response.data;
+    } else {
+      return null;
+    }
   } catch (error) {
     console.error('Error occurred while sending payment request:', error.message || error);
     throw new Error(`Payment request failed: ${error.message || error}`);

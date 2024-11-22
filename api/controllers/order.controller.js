@@ -77,6 +77,9 @@ module.exports = {
         message: err.message || "payment error",
       });
     }
+    await db.order.update(
+      { pay_url: paymentRS.payUrl },
+      { where: { id: order.id } })
     res.status(200).send(paymentRS);
   },
 
@@ -135,6 +138,7 @@ module.exports = {
     db.order
       .findAll({
         where: { user_id: user_id },
+        order: [['createdAt', 'DESC']],
       })
       .then((data) => {
         res.json(data);
@@ -207,8 +211,8 @@ module.exports = {
   },
   payCallback: async (req, res) => {
     try {
-      if(req.body.resultCode == 0){
-       await db.order.update({status: 2}, { where: { id: req.body.orderId } })
+      if (req.body.resultCode == 0) {
+        await db.order.update({ status: 2 }, { where: { id: req.body.orderId } })
       }
       return res.status(200).json(req.body)
     } catch (error) {
