@@ -358,6 +358,34 @@ module.exports = {
         }
       });
   },
+  findAroundByid: async (req, res) => {
+    try {
+      const caters = await db.book_category.findAll({
+        where: { book_id: req.params.id }
+      });
+  
+      const catersID = caters.map(item => item.category_id);
+  
+      const books = await db.books.findAll({
+        where: { quantity: { [db.Op.gt]: 0 } }, 
+        limit: 4,
+        include: {
+          model: db.category,
+          where: {
+            id: catersID
+          }
+        },
+        order: [
+          [db.sequelize.fn('RAND')]
+        ]
+      });
+      res.json(books);
+    } catch (error) {
+      res.status(500).send({
+        message: `Error retrieving books: ${error.message}`,
+      });
+    }
+  },
 
   findByCategory: (req, res) => {
     let author = req.query.author;

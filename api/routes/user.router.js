@@ -18,6 +18,7 @@ module.exports = (app) => {
 
   // find a single book with id
   router.get("/books/id/:id", bookController.findByid);
+  router.get("/arrr-books/id/:id", bookController.findAroundByid);
 
   // find books by category
   router.post("/books/category", bookController.findByCategory);
