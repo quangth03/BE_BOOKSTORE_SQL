@@ -10,6 +10,16 @@ module.exports = {
     db.comment
       .findAll({
         // attributes: { exclude: ["password"] },
+        include: [
+          {
+            model: db.user,
+            attributes: ["full_name"],
+          },
+          {
+            model: db.books,
+            attributes: ["title", "image"],
+          },
+        ]
       })
       .then((data) => {
         res.send(data);

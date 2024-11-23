@@ -104,7 +104,7 @@ module.exports = {
 
   getAllOder: (req, res) => {
     db.order
-      .findAll()
+      .findAll({include:[{model: db.user,attributes:["full_name"]}]})
       .then((data) => {
         res.send(data);
       })
