@@ -3,6 +3,7 @@ const bookController = require("../controllers/book.controller");
 const categoryController = require("../controllers/category.controller");
 const orderController = require("../controllers/order.controller");
 const cartController = require("../controllers/cart.controller");
+const discountController = require("../controllers/discount.controller");
 const router = require("express").Router();
 const verify = require("../middlewares/authJwt").verifyToken_User;
 
@@ -55,6 +56,10 @@ module.exports = (app) => {
   router.post("/createPay", verify, orderController.createPay)
   router.post("/momoCallBack", orderController.payCallback)
 
+  router.get('/discounts/valid', discountController.getValidDiscounts);
+
 
   app.use("/user", router);
 };
+
+

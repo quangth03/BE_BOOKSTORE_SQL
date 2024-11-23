@@ -4,6 +4,7 @@ const categoryController = require("../controllers/category.controller");
 const orderController = require("../controllers/order.controller");
 const cartController = require("../controllers/cart.controller");
 const dashboardController = require("../controllers/dashboard.controller");
+const discountController = require("../controllers/discount.controller");
 const router = require("express").Router();
 const verify = require("../middlewares/authJwt").verifyToken_Admin;
 
@@ -77,6 +78,14 @@ module.exports = (app) => {
   // get category by id
   router.get("/categories/:id", categoryController.findById);
   router.get("/stats", dashboardController.getDashboardStats);
+
+  router.get('/discounts', discountController.getAllDiscounts);
+  router.get('/discounts/valid', discountController.getValidDiscounts);
+  router.get('/discounts/:id', discountController.getDiscountById);
+  router.post('/discounts', discountController.createDiscount);
+  router.put('/discounts/:id', discountController.updateDiscount);
+  router.delete('/discounts/:id', discountController.deleteDiscount);
+
 
   app.use("/admin", router);
 };
