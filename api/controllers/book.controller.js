@@ -361,23 +361,21 @@ module.exports = {
   findAroundByid: async (req, res) => {
     try {
       const caters = await db.book_category.findAll({
-        where: { book_id: req.params.id }
+        where: { book_id: req.params.id },
       });
-  
-      const catersID = caters.map(item => item.category_id);
-  
+
+      const catersID = caters.map((item) => item.category_id);
+
       const books = await db.books.findAll({
-        where: { quantity: { [db.Op.gt]: 0 } }, 
+        where: { quantity: { [db.Op.gt]: 0 } },
         limit: 4,
         include: {
           model: db.category,
           where: {
-            id: catersID
-          }
+            id: catersID,
+          },
         },
-        order: [
-          [db.sequelize.fn('RAND')]
-        ]
+        order: [[db.sequelize.fn("RAND")]],
       });
       res.json(books);
     } catch (error) {
@@ -501,7 +499,7 @@ module.exports = {
   checkComment: (req, res) => {
     db.user
       .findOne({
-        where: { id: req.user_id },
+        where: { id: req.user_id, isAdmin: 0 },
         include: [
           {
             model: db.order,
