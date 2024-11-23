@@ -3,4 +3,4 @@ Content-Type: application/json
 Content-Length: 
 
 ###
-GET  http://localhost:8080/payment/create
+GET  http://localhost:8080/user/arrr-books/id/1485
