@@ -46,6 +46,7 @@ db.book_category = require("./book_category.model.js")(
   DataTypes
 );
 db.comment = require("./comment.model.js")(sequelize, Sequelize, DataTypes);
+db.discount = require("./discount.model.js")(sequelize, Sequelize, DataTypes);
 
 // RELATIONSHIPS
 // Books vs Category
