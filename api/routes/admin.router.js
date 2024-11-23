@@ -4,6 +4,7 @@ const categoryController = require("../controllers/category.controller");
 const orderController = require("../controllers/order.controller");
 const cartController = require("../controllers/cart.controller");
 const dashboardController = require("../controllers/dashboard.controller");
+const commentController = require("../controllers/comment.controller");
 const router = require("express").Router();
 const verify = require("../middlewares/authJwt").verifyToken_Admin;
 
@@ -78,5 +79,9 @@ module.exports = (app) => {
   router.get("/categories/:id", categoryController.findById);
   router.get("/stats", dashboardController.getDashboardStats);
 
+  // get all cmt
+  router.get("/comments", verify, commentController.findAll);
+
+  router.delete("/comment/:id", verify, commentController.delete);
   app.use("/admin", router);
 };
