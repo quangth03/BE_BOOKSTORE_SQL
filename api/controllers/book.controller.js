@@ -284,12 +284,15 @@ module.exports = {
     let sortD = req.query.sortD;
     let sortBy = req.query.sort;
     let limit = parseInt(req.query.limit);
+    let cat = req.query.cat;
 
+    cat = cat ? cat.split('-').map(num => Number(num)) : null;
     author = author ? author : "";
     title = title ? title : "";
     from = from ? from : 0;
-    to = to ? to : 1000000000; // 1 tỷ =)))
+    to = to ? to : 1000000000; // Giá trị mặc định cho từ đến
     let yearEnd = 0;
+
     if (!year || year < 1970) {
       year = 1970;
       yearEnd = 3000;
@@ -302,40 +305,59 @@ module.exports = {
       from = to;
       to = temp;
     }
+
     if (!page || page <= 0) page = 1;
     if (!limit || limit <= 0) limit = 1000;
+
     sortD = sortD ? sortD : "ASC";
     sortBy = sortBy ? sortBy : "id";
 
-    db.books
-      .findAll({
-        where: {
-          author: {
-            [db.Op.substring]: author,
-          },
-          isDelete: 0,
-          title: {
-            [db.Op.substring]: title,
-          },
-          price: {
-            [db.Op.between]: [from, to],
-          },
-          publication_date: {
-            [db.Op.between]: [new Date(year, 0, 0), new Date(yearEnd, 0, 0)],
-          },
+    let queryOptions = {
+      where: {
+        author: {
+          [db.Op.substring]: author,
         },
-        offset: (page - 1) * limit,
-        limit: limit,
-        order: [[sortBy, sortD]],
-      })
+        isDelete: 0,
+        title: {
+          [db.Op.substring]: title,
+        },
+        price: {
+          [db.Op.between]: [from, to],
+        },
+        publication_date: {
+          [db.Op.between]: [new Date(year, 0, 0), new Date(yearEnd, 0, 0)],
+        },
+      },
+      offset: (page - 1) * limit,
+      limit: limit,
+      order: [[sortBy, sortD]],
+    };
+
+    if (cat) {
+      queryOptions.include = [
+        {
+          model: db.category,
+          where: { id: cat }, 
+        },
+      ];
+    }
+
+    db.books
+      .findAll(queryOptions)
       .then((data) => {
         if (data.length > 0) {
           res.json(data);
         } else {
           res.send({
-            message: "No books found !",
+            message: "No books found!",
           });
         }
+      })
+      .catch((error) => {
+        console.error(error);
+        res.status(500).send({
+          message: "Error retrieving books.",
+        });
       });
   },
 
