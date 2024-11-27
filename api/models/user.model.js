@@ -39,6 +39,10 @@
           type: DataTypes.BOOLEAN,
           defaultValue: false
         },
+        isDelete: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
       },
       {
         // Triggers

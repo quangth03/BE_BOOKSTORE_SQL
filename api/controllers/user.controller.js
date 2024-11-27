@@ -20,6 +20,7 @@ module.exports = {
       full_name: req.body.full_name,
       address: req.body.address,
       avatar: req.body.avatar,
+      isDelete: req.body.isDelete
     };
 
     // save user in the database
@@ -63,6 +64,11 @@ module.exports = {
         if (!data) {
           return res.status(404).send({
             message: "User Not found.",
+          });
+        }
+        if (data.isDelete) {
+          return res.status(403).send({
+            message: "Your account has been blocked.",
           });
         }
 
@@ -123,6 +129,7 @@ module.exports = {
     db.user
       .findAll({
         attributes: { exclude: ["password"] },
+        where: { isAdmin: 0 },
       })
       .then((data) => {
         res.send(data);
@@ -242,5 +249,45 @@ module.exports = {
         message: "An error occurred while processing your request.",
       });
     }
+  },
+
+  delete: (req, res) => {
+    const id = req.params.id;
+    db.user
+      .update(
+        { isDelete: 1 },
+        {
+          where: { id: id },
+        }
+      )
+      .then((num) => {
+        if (num == 1) {
+          res.send({
+            message: "User was deleted successfully!",
+          });
+        } else {
+          res.send({
+            message: `Cannot delete User with id = ${id}. Maybe User was not found!`,
+          });
+        }
+      });
+  },
+
+  restore: (req, res) => {
+    db.user
+      .update(req.body, {
+        where: { id: req.params.id },
+      })
+      .then((num) => {
+        if (num == 1) {
+          res.send({
+            message: "User was updated successfully.",
+          });
+        } else {
+          res.send({
+            message: `Cannot update User with id = ${req.params.id}. Maybe User was not found !`,
+          });
+        }
+      });
   },
 };
