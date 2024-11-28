@@ -18,6 +18,8 @@ module.exports = (app) => {
 
   // get all users
   router.get("/users", verify, userController.findAll);
+  router.delete("/users/:id", verify, userController.delete);
+  router.put("/users/restore/:id", verify, userController.restore);
 
   // get user's profile
   router.get("/users/:id", verify, userController.findByid);
@@ -41,6 +43,7 @@ module.exports = (app) => {
   router.put("/books/restore/:id", verify, bookController.restore);
   // find books by category
   router.post("/books/category", bookController.findByCategory);
+
 
   // Delete a Book with id
   router.delete("/books/:id", verify, bookController.delete);
