@@ -286,7 +286,7 @@ module.exports = {
     let limit = parseInt(req.query.limit);
     let cat = req.query.cat;
 
-    cat = cat ? cat.split('-').map(num => Number(num)) : null;
+    cat = cat ? cat.split("-").map((num) => Number(num)) : null;
     author = author ? author : "";
     title = title ? title : "";
     from = from ? from : 0;
@@ -337,7 +337,7 @@ module.exports = {
       queryOptions.include = [
         {
           model: db.category,
-          where: { id: cat }, 
+          where: { id: cat },
         },
       ];
     }

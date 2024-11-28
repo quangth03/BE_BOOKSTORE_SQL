@@ -9,6 +9,9 @@ module.exports = {
   findAll: (req, res) => {
     db.comment
       .findAll({
+        order: [
+          ["createdAt", "DESC"], // Thêm phần này để sắp xếp theo ngày tạo (mới nhất)
+        ],
         // attributes: { exclude: ["password"] },
         include: [
           {
@@ -19,7 +22,7 @@ module.exports = {
             model: db.books,
             attributes: ["title", "image"],
           },
-        ]
+        ],
       })
       .then((data) => {
         res.send(data);
