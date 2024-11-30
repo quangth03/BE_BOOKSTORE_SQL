@@ -94,5 +94,7 @@ module.exports = (app) => {
   router.put("/discounts/:id", discountController.updateDiscount);
   router.delete("/discounts/:id", discountController.deleteDiscount);
 
+  router.post("/blockUserAndSendEmail", userController.blockUserAndSendEmail);
+
   app.use("/admin", router);
 };

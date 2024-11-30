@@ -43,6 +43,9 @@
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
+        blockReason: {
+                type: DataTypes.STRING,
+            },
       },
       {
         // Triggers

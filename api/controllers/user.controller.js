@@ -290,4 +290,61 @@ module.exports = {
         }
       });
   },
+
+  blockUserAndSendEmail: async (req, res) => {
+  const { userId, blockReason } = req.body;
+
+  if (!userId || !blockReason) {
+    return res.status(400).send({ message: "User ID and Block Reason are required." });
+  }
+
+  try {
+    // Tìm người dùng theo userId
+    const user = await db.user.findOne({ where: { id: userId } });
+
+    if (!user) {
+      return res.status(404).send({ message: "User not found." });
+    }
+
+    // Cập nhật trạng thái chặn người dùng trong cơ sở dữ liệu
+    await db.user.update(
+      { isDelete: true, blockReason },  // Giả sử bạn có trường isBlocked và blockReason
+      { where: { id: user.id } }
+    );
+
+    // Tạo transporter cho Nodemailer (sử dụng Gmail SMTP hoặc một dịch vụ khác)
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: "lequangsang08102003@gmail.com", 
+        pass: "oybv dfcq egmp tloa",  // Thay bằng mật khẩu app cụ thể hoặc OAuth
+      },
+    });
+
+    // Gửi email thông báo về việc chặn tài khoản
+    await transporter.sendMail({
+      from: '"Book Store" <your-email@gmail.com>',
+      to: user.email,
+      subject: "Thông báo về việc chặn tài khoản của bạn",
+      html: `
+        <p>Chào ${user.full_name},</p>
+        <p>Tài khoản của bạn đã bị chặn vì lý do sau:</p>
+        <p><strong>${blockReason}</strong></p>
+        <p>Vui lòng liên hệ với chúng tôi nếu bạn có bất kỳ câu hỏi nào.</p>
+        <p>Trân trọng,</p>
+        <p>Admin Book Store</p>
+      `,
+    });
+
+    // Trả về phản hồi thành công
+    res.status(200).send({
+      message: "User has been blocked and an email has been sent to the user.",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      message: "An error occurred while processing your request.",
+    });
+  }
+}
 };
