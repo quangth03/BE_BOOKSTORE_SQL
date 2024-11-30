@@ -331,6 +331,12 @@ module.exports = {
       offset: (page - 1) * limit,
       limit: limit,
       order: [[sortBy, sortD]],
+      include: [
+        {
+          model: db.category,
+          attributes: ["id", "name"],
+        },
+      ],
     };
 
     if (cat) {
@@ -416,7 +422,7 @@ module.exports = {
     let page = req.query.page;
     let sortD = req.query.sortD;
     let sortBy = req.query.sort;
-    let limit = req.query.limit;
+    let limit = parseInt(req.query.limit);
 
     const categories = req.body.categories || [];
 
