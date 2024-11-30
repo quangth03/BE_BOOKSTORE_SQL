@@ -20,6 +20,10 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
           type: DataTypes.INTEGER,
           defaultValue: 1
         },
+        discount: {
+          type: DataTypes.INTEGER,
+          defaultValue: 0
+        },
         pay_url: {
           type: DataTypes.STRING,
         }

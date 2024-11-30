@@ -28,11 +28,13 @@ module.exports = {
         message: "Cart is empty!",
       });
     }
-
+    // discount
+    const discount = req.body.value ?? 0
     let order = await db.order.create({
       user_id: req.user_id,
-      total: cart.total,
+      total: cart.total - discount,
       total_quantity: cart.total_quantity,
+      discount: discount
     });
 
     const cartIteam = await db.cart_details.findAll({
