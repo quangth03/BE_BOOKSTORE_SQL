@@ -4,6 +4,7 @@ const categoryController = require("../controllers/category.controller");
 const orderController = require("../controllers/order.controller");
 const cartController = require("../controllers/cart.controller");
 const discountController = require("../controllers/discount.controller");
+const wishListController = require("../controllers/wishList.controller");
 const router = require("express").Router();
 const verify = require("../middlewares/authJwt").verifyToken_User;
 
@@ -58,6 +59,10 @@ module.exports = (app) => {
   router.post("/momoCallBack", orderController.payCallback)
 
   router.get('/discounts/valid', discountController.getValidDiscounts);
+
+  router.get("/wishList", verify, wishListController.getWishlist);
+  router.post("/wishList", verify, wishListController.addItem);
+  router.delete("/wishList/:bookId", verify, wishListController.removeItem);
 
 
   app.use("/user", router);

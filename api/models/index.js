@@ -47,7 +47,8 @@ db.book_category = require("./book_category.model.js")(
 );
 db.comment = require("./comment.model.js")(sequelize, Sequelize, DataTypes);
 db.discount = require("./discount.model.js")(sequelize, Sequelize, DataTypes);
-
+db.wishList = require("./wishList.model.js")(sequelize, Sequelize, DataTypes);
+db.wishList_books = require("./wishList_books.model.js")(sequelize, Sequelize, DataTypes);
 // RELATIONSHIPS
 // Books vs Category
 db.books.belongsToMany(db.category, {
@@ -100,4 +101,21 @@ db.books.hasMany(db.order_details, { foreignKey: "book_id" });
 db.order_details.belongsTo(db.books, {
   foreignKey: "book_id",
 });
+
+// User và WishList
+db.user.hasMany(db.wishList, { foreignKey: 'user_id' });
+db.wishList.belongsTo(db.user, { foreignKey: 'user_id' });
+
+// WishList và WishList_books
+db.wishList.hasMany(db.wishList_books, { foreignKey: 'wishList_id', as: 'wishListItems' });
+db.wishList_books.belongsTo(db.wishList, { foreignKey: 'wishList_id', as: 'wishList' });
+
+// Books và WishList_books
+db.books.hasMany(db.wishList_books, { foreignKey: 'book_id', as: 'bookWishLists' });
+db.wishList_books.belongsTo(db.books, { foreignKey: 'book_id', as: 'book' });
+
+// WishList và Books (Mối quan hệ nhiều-nhiều)
+db.wishList.belongsToMany(db.books, { through: db.wishList_books, foreignKey: "wishList_id",as: 'booksInWishLists'  });
+db.books.belongsToMany(db.wishList, { through: db.wishList_books, foreignKey: 'book_id',  as: 'wishLists'  });
+
 module.exports = db;
