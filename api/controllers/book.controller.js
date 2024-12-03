@@ -276,7 +276,7 @@ module.exports = {
 
   findAll: (req, res) => {
     let author = req.query.author;
-    let title = parseInt(req.query.title);
+    let title = req.query.title;
     let from = parseInt(req.query.from);
     let to = req.query.to;
     let year = req.query.year;
