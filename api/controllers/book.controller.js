@@ -276,8 +276,8 @@ module.exports = {
 
   findAll: (req, res) => {
     let author = req.query.author;
-    let title = req.query.title;
-    let from = req.query.from;
+    let title = parseInt(req.query.title);
+    let from = parseInt(req.query.from);
     let to = req.query.to;
     let year = req.query.year;
     let page = req.query.page;
@@ -489,6 +489,95 @@ module.exports = {
             message: "No books found !",
           });
         }
+      });
+  },
+  findAllByCat: (req, res) => {
+    let author = req.query.author;
+    let title = req.query.title;
+    let from = req.query.from;
+    let to = req.query.to;
+    let year = req.query.year;
+    let page = req.query.page;
+    let sortD = req.query.sortD;
+    let sortBy = req.query.sort;
+    let limit = parseInt(req.query.limit);
+    let cat = req.params.id;
+
+    author = author ? author : "";
+    title = title ? title : "";
+    from = from ? from : 0;
+    to = to ? to : 1000000000; // Giá trị mặc định cho từ đến
+    let yearEnd = 0;
+
+    if (!year || year < 1970) {
+      year = 1970;
+      yearEnd = 3000;
+    } else {
+      yearEnd = parseInt(year) + 1;
+    }
+
+    if (from > to) {
+      let temp = from;
+      from = to;
+      to = temp;
+    }
+
+    if (!page || page <= 0) page = 1;
+    if (!limit || limit <= 0) limit = 1000;
+
+    sortD = sortD ? sortD : "ASC";
+    sortBy = sortBy ? sortBy : "id";
+
+    let queryOptions = {
+      where: {
+        author: {
+          [db.Op.substring]: author,
+        },
+        isDelete: 0,
+        title: {
+          [db.Op.substring]: title,
+        },
+        price: {
+          [db.Op.between]: [from, to],
+        },
+        publication_date: {
+          [db.Op.between]: [new Date(year, 0, 0), new Date(yearEnd, 0, 0)],
+        },
+      },
+      offset: (page - 1) * limit,
+      limit: limit,
+      order: [[sortBy, sortD]],
+      include: [
+        {
+          model: db.category,
+          attributes: ["id", "name"],
+        },
+      ],
+    };
+    if (cat) {
+      queryOptions.include = [
+        {
+          model: db.category,
+          where: { id: cat },
+        },
+      ];
+    }
+    db.books
+      .findAll(queryOptions)
+      .then((data) => {
+        if (data.length > 0) {
+          res.json(data);
+        } else {
+          res.send({
+            message: "No books found!",
+          });
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        res.status(500).send({
+          message: "Error retrieving books.",
+        });
       });
   },
 
