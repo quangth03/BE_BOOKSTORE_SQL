@@ -56,17 +56,15 @@ module.exports = (app) => {
   router.get("/comment/book/:id", bookController.commentFindByBook);
   router.get("/comment/check/book/:id", verify, bookController.checkComment);
   router.post("/comment", verify, bookController.comment);
-  router.post("/createPay", verify, orderController.createPay)
-  router.post("/momoCallBack", orderController.payCallback)
+  router.post("/createPay", verify, orderController.createPay);
+  router.post("/momoCallBack", orderController.payCallback);
 
-  router.get('/discounts/valid', discountController.getValidDiscounts);
+  router.get("/discounts/valid", discountController.getValidDiscounts);
 
   router.get("/wishList", verify, wishListController.getWishlist);
   router.post("/wishList", verify, wishListController.addItem);
   router.delete("/wishList/:bookId", verify, wishListController.removeItem);
 
-
+  router.get("/topBooks", verify, bookController.getTopSellingBooks);
   app.use("/user", router);
 };
-
-

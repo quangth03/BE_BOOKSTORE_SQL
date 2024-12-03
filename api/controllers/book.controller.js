@@ -640,4 +640,49 @@ module.exports = {
         console.error("Lỗi truy vấn:", error);
       });
   },
+
+  getTopSellingBooks: async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit) || 5;
+
+      const topSellingBooks = await db.order_details.findAll({
+        attributes: [
+          [
+            db.sequelize.fn("SUM", db.sequelize.col("order_detail.quantity")), // Tính tổng số lượng bán
+            "total_sold",
+          ],
+        ],
+        include: [
+          {
+            model: db.books, // Liên kết với bảng books để lấy thông tin sách
+            attributes: ["id", "title", "image", "price", "discount"], // Lấy các thuộc tính title, image, price, discount từ bảng books
+          },
+        ],
+        group: ["book_id"], // Nhóm theo book_id
+        order: [[db.sequelize.literal("total_sold"), "DESC"]], // Sắp xếp theo tổng số lượng bán
+        limit: limit, // Giới hạn số lượng sách
+      });
+
+      if (topSellingBooks.length === 0) {
+        return res.status(404).json({ message: "No top selling books found." });
+      }
+
+      const topBook = topSellingBooks.map((item) => ({
+        id: item.book.id,
+        title: item.book.title, // Lấy tên sách từ model book
+        image: item.book.image, // Lấy ảnh sách từ model book
+        price: item.book.price, // Lấy giá sách từ model book
+        discount: item.book.discount, // Lấy giảm giá sách từ model book
+        totalSold: item.get("total_sold"), // Lấy tổng số lượng bán
+      }));
+
+      return res.status(200).json(topBook);
+    } catch (error) {
+      return res.status(500).json({
+        message:
+          error.message ||
+          "Some error occurred while retrieving top selling books.",
+      });
+    }
+  },
 };
