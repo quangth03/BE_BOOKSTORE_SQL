@@ -29,12 +29,12 @@ module.exports = {
       });
     }
     // discount
-    const discount = req.body.value ?? 0
+    const discount = req.body.value ?? 0;
     let order = await db.order.create({
       user_id: req.user_id,
       total: cart.total - discount,
       total_quantity: cart.total_quantity,
-      discount: discount
+      discount: discount,
     });
 
     const cartIteam = await db.cart_details.findAll({
@@ -66,14 +66,13 @@ module.exports = {
       db.cart.destroy({
         where: { id: cart.id },
       });
-
     } catch (error) {
       return res.status(500).send({
         message: err.message || "Some error occurred while destroy the cart.",
       });
     }
 
-    const paymentRS = await createPayment(order.id, order.total)
+    const paymentRS = await createPayment(order.id, order.total);
     if (!paymentRS) {
       return res.status(500).send({
         message: err.message || "payment error",
@@ -81,7 +80,8 @@ module.exports = {
     }
     await db.order.update(
       { pay_url: paymentRS.payUrl },
-      { where: { id: order.id } })
+      { where: { id: order.id } }
+    );
     res.status(200).send(paymentRS);
   },
 
@@ -106,7 +106,7 @@ module.exports = {
 
   getAllOder: (req, res) => {
     db.order
-      .findAll({include:[{model: db.user,attributes:["full_name"]}]})
+      .findAll({ include: [{ model: db.user, attributes: ["full_name"] }] })
       .then((data) => {
         res.send(data);
       })
@@ -140,7 +140,7 @@ module.exports = {
     db.order
       .findAll({
         where: { user_id: user_id },
-        order: [['createdAt', 'DESC']],
+        order: [["createdAt", "DESC"]],
       })
       .then((data) => {
         res.json(data);
@@ -159,16 +159,12 @@ module.exports = {
         include: [
           {
             model: db.books,
-            attributes: [
-              "id",
-              "title",
-              "author",
-              "price",
-              "description",
-              "publication_date",
-              "image",
-            ],
+            attributes: ["id", "title", "author", "price", "image"],
             through: { attributes: ["quantity", "total"] },
+          },
+          {
+            model: db.user, // Nếu cần thông tin user
+            attributes: ["full_name", "address", "phone_number"],
           },
         ],
       })
@@ -190,37 +186,40 @@ module.exports = {
   createPay: async (req, res) => {
     try {
       // check order id in user
-      const order = await db.order.findOne({ where: { user_id: req.user_id, id: req.body.id } })
+      const order = await db.order.findOne({
+        where: { user_id: req.user_id, id: req.body.id },
+      });
       if (!order) {
         return res.status(400).send({
           message: "Order not found!",
-        })
+        });
       }
-      const paymentRS = await createPayment(order.id, order.total)
+      const paymentRS = await createPayment(order.id, order.total);
       if (!paymentRS) {
         return res.status(500).send({
           message: err.message || "payment error",
         });
       }
       res.status(200).send(paymentRS);
-
     } catch (error) {
       return res.status(500).send({
         message: "serve not error!",
-      })
+      });
     }
-
   },
   payCallback: async (req, res) => {
     try {
       if (req.body.resultCode == 0) {
-        await db.order.update({ status: 2 }, { where: { id: req.body.orderId } })
+        await db.order.update(
+          { status: 2 },
+          { where: { id: req.body.orderId } }
+        );
       }
-      return res.status(200).json(req.body)
+      return res.status(200).json(req.body);
     } catch (error) {
       return res.status(500).send({
         message: "Order not found!",
-      })
+      });
     }
-  }
+  },
 };

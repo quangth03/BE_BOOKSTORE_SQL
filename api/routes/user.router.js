@@ -66,6 +66,6 @@ module.exports = (app) => {
   router.post("/wishList", verify, wishListController.addItem);
   router.delete("/wishList/:bookId", verify, wishListController.removeItem);
 
-  router.get("/topBooks", verify, bookController.getTopSellingBooks);
+  router.get("/topBooks", bookController.getTopSellingBooks);
   app.use("/user", router);
 };
