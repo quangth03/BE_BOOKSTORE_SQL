@@ -34,6 +34,7 @@ module.exports = (app) => {
 
   // add item to cart
   router.post("/cart", verify, cartController.addItem);
+  router.put("/cart", verify, cartController.update);
 
   // remove item from cart
   router.delete("/cart", verify, cartController.removeItem);
