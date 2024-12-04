@@ -16,7 +16,7 @@ module.exports = {
         include: [
           {
             model: db.user,
-            attributes: ["full_name"],
+            attributes: ["full_name", "username"],
           },
           {
             model: db.books,

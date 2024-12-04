@@ -2,7 +2,7 @@ const db = require("../models");
 const { Op } = require("sequelize"); // Để sử dụng Op.gte trong điều kiện query
 
 module.exports = {
-    createDiscount: (req, res) => {
+  createDiscount: (req, res) => {
     if (!req.body.value || !req.body.expiredAt) {
       res.status(400).send({
         message: "Value and expiration date are required!",
@@ -27,7 +27,8 @@ module.exports = {
       })
       .catch((err) => {
         res.status(500).send({
-          message: err.message || "Some error occurred while creating the discount.",
+          message:
+            err.message || "Some error occurred while creating the discount.",
         });
       });
   },
@@ -43,14 +44,15 @@ module.exports = {
       res.status(200).json(data);
     } catch (err) {
       res.status(500).send({
-        message: err.message || "Some error occurred while retrieving discounts.",
+        message:
+          err.message || "Some error occurred while retrieving discounts.",
       });
     }
   },
 
   getDiscountById: async (req, res) => {
     const id = req.params.id;
-    
+
     try {
       const data = await db.discount.findOne({ where: { id: id } });
       if (!data) {
@@ -61,14 +63,15 @@ module.exports = {
       res.status(200).json(data);
     } catch (err) {
       res.status(500).send({
-        message: err.message || "Some error occurred while retrieving the discount.",
+        message:
+          err.message || "Some error occurred while retrieving the discount.",
       });
     }
   },
 
   updateDiscount: (req, res) => {
     const id = req.params.id;
-    
+
     db.discount
       .update(req.body, {
         where: { id: id },
@@ -86,7 +89,8 @@ module.exports = {
       })
       .catch((err) => {
         res.status(500).send({
-          message: err.message || "Some error occurred while updating the discount.",
+          message:
+            err.message || "Some error occurred while updating the discount.",
         });
       });
   },
@@ -111,7 +115,8 @@ module.exports = {
       })
       .catch((err) => {
         res.status(500).send({
-          message: err.message || "Some error occurred while deleting the discount.",
+          message:
+            err.message || "Some error occurred while deleting the discount.",
         });
       });
   },
@@ -137,8 +142,10 @@ module.exports = {
       res.status(200).json(data);
     } catch (err) {
       res.status(500).send({
-        message: err.message || "Some error occurred while retrieving valid discounts.",
+        message:
+          err.message ||
+          "Some error occurred while retrieving valid discounts.",
       });
     }
-  }
+  },
 };
