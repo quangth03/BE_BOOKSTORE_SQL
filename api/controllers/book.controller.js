@@ -643,7 +643,7 @@ module.exports = {
 
   getTopSellingBooks: async (req, res) => {
     try {
-      const limit = parseInt(req.query.limit) || 5;
+      const limit = parseInt(req.query.limit) || 10;
 
       const topSellingBooks = await db.order_details.findAll({
         attributes: [
