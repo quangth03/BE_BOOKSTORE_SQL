@@ -107,6 +107,55 @@ module.exports = {
       });
     }
   },
+  update: async (req, res) => {
+    if (!req.body.book_id) {
+      return res.status(400).send({
+        message: "Content can not be empty!",
+      });
+    }
+    if (!req.body.quantity) {
+      return res.status(400).send({
+        message: "Content can not be empty!",
+      });
+    }
+    let cart = await db.cart.findOne({
+      where: {
+        user_id: req.user_id,
+      },
+    });
+    if (!cart) {
+      return res.status(400).send({ message: "Content can not be empty!", });
+    }
+    let cartItem = await db.cart_details.findOne({ where: { cart_id: cart.id, book_id: req.body.book_id }, include: [{ model: db.books }] })
+    if (!cartItem) {
+      return res.status(400).send({ message: "Content can not be empty!", });
+    }
+    // update item
+    await db.cart_details.update(
+      {
+        quantity: req.body.quantity,
+        total: cartItem.books.price * req.body.quantity
+      },
+      {
+        where:
+        {
+          cart_id: cart.id,
+          book_id: req.body.book_id
+        }
+      })
+      // update cart
+      await db.cart.update(
+        {
+          total_quantity: cart.total_quantity + ( req.body.quantity - cartItem.quantity ),
+          total: cart.total + ((req.body.quantity * cartItem.books.price) - (cartItem.quantity * cartItem.books.price) )
+        },
+        {
+          where:
+          {
+            user_id: req.user_id
+          }
+        })
+  },
 
   removeItem: async (req, res) => {
     if (!req.body.book_id) {
