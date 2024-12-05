@@ -71,10 +71,8 @@ module.exports = {
           const sellPrice = book.price * (1 - book.discount / 100);
           await db.cart_details.update(
             {
-              quantity: parseInt(cart_details.quantity) + quantity,
-              total:
-                parseInt(cart_details.total) +
-                parseInt(parseInt(sellPrice) * quantity),
+              quantity: cart_details.quantity + quantity,
+              total: cart_details.total + parseInt(sellPrice) * quantity,
             },
             {
               where: {
@@ -86,7 +84,7 @@ module.exports = {
 
           await db.cart.update(
             {
-              total: cart.total + sellPrice * quantity,
+              total: cart.total + parseInt(sellPrice) * quantity,
               total_quantity: cart.total_quantity + quantity,
             },
             {
@@ -124,37 +122,44 @@ module.exports = {
       },
     });
     if (!cart) {
-      return res.status(400).send({ message: "Content can not be empty!", });
+      return res.status(400).send({ message: "Content can not be empty!" });
     }
-    let cartItem = await db.cart_details.findOne({ where: { cart_id: cart.id, book_id: req.body.book_id }, include: [{ model: db.books }] })
+    let cartItem = await db.cart_details.findOne({
+      where: { cart_id: cart.id, book_id: req.body.book_id },
+      include: [{ model: db.books }],
+    });
     if (!cartItem) {
-      return res.status(400).send({ message: "Content can not be empty!", });
+      return res.status(400).send({ message: "Content can not be empty!" });
     }
     // update item
     await db.cart_details.update(
       {
         quantity: req.body.quantity,
-        total: cartItem.books.price * req.body.quantity
+        total: cartItem.books.price * req.body.quantity,
       },
       {
-        where:
-        {
+        where: {
           cart_id: cart.id,
-          book_id: req.body.book_id
-        }
-      })
-      // update cart
-      await db.cart.update(
-        {
-          total_quantity: cart.total_quantity + ( req.body.quantity - cartItem.quantity ),
-          total: cart.total + ((req.body.quantity * cartItem.books.price) - (cartItem.quantity * cartItem.books.price) )
+          book_id: req.body.book_id,
         },
-        {
-          where:
-          {
-            user_id: req.user_id
-          }
-        })
+      }
+    );
+    // update cart
+    await db.cart.update(
+      {
+        total_quantity:
+          cart.total_quantity + (req.body.quantity - cartItem.quantity),
+        total:
+          cart.total +
+          (req.body.quantity * cartItem.books.price -
+            cartItem.quantity * cartItem.books.price),
+      },
+      {
+        where: {
+          user_id: req.user_id,
+        },
+      }
+    );
   },
 
   removeItem: async (req, res) => {
