@@ -349,10 +349,15 @@ module.exports = {
     }
 
     db.books
-      .findAll(queryOptions)
-      .then((data) => {
-        if (data.length > 0) {
-          res.json(data);
+      .findAndCountAll(queryOptions) // sử dụng findAndCountAll
+      .then((result) => {
+        if (result.rows.length > 0) {
+          res.json({
+            totalCount: result.count, // tổng số bản ghi
+            books: result.rows, // dữ liệu phân trang
+            currentPage: page,
+            totalPages: Math.ceil(result.count / limit), // số trang
+          });
         } else {
           res.send({
             message: "No books found!",
@@ -563,10 +568,15 @@ module.exports = {
       ];
     }
     db.books
-      .findAll(queryOptions)
-      .then((data) => {
-        if (data.length > 0) {
-          res.json(data);
+      .findAndCountAll(queryOptions) // sử dụng findAndCountAll
+      .then((result) => {
+        if (result.rows.length > 0) {
+          res.json({
+            totalCount: result.count, // tổng số bản ghi
+            books: result.rows, // dữ liệu phân trang
+            currentPage: page,
+            totalPages: Math.ceil(result.count / limit), // số trang
+          });
         } else {
           res.send({
             message: "No books found!",

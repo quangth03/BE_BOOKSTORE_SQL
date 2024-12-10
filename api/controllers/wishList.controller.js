@@ -119,6 +119,7 @@ module.exports = {
               "description",
               "publication_date",
               "image",
+              "quantity",
             ],
             through: { attributes: ["createdAt"] }, // Yêu cầu trả về createdAt từ bảng liên kết
           },
