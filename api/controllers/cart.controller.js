@@ -116,50 +116,82 @@ module.exports = {
         message: "Content can not be empty!",
       });
     }
-    let cart = await db.cart.findOne({
-      where: {
-        user_id: req.user_id,
-      },
-    });
-    if (!cart) {
-      return res.status(400).send({ message: "Content can not be empty!" });
-    }
-    let cartItem = await db.cart_details.findOne({
-      where: { cart_id: cart.id, book_id: req.body.book_id },
-      include: [{ model: db.books }],
-    });
-    if (!cartItem) {
-      return res.status(400).send({ message: "Content can not be empty!" });
-    }
-    // update item
-    await db.cart_details.update(
-      {
-        quantity: req.body.quantity,
-        total: cartItem.books.price * req.body.quantity,
-      },
-      {
-        where: {
-          cart_id: cart.id,
-          book_id: req.body.book_id,
-        },
-      }
-    );
-    // update cart
-    await db.cart.update(
-      {
-        total_quantity:
-          cart.total_quantity + (req.body.quantity - cartItem.quantity),
-        total:
-          cart.total +
-          (req.body.quantity * cartItem.books.price -
-            cartItem.quantity * cartItem.books.price),
-      },
-      {
+
+    try {
+      // Tìm giỏ hàng của người dùng
+      let cart = await db.cart.findOne({
         where: {
           user_id: req.user_id,
         },
+      });
+      if (!cart) {
+        return res.status(400).send({ message: "Cart not found!" });
       }
-    );
+
+      // Tìm chi tiết giỏ hàng
+      let cartItem = await db.cart_details.findOne({
+        where: { cart_id: cart.id, book_id: req.body.book_id },
+        include: [{ model: db.books }],
+      });
+      if (!cartItem) {
+        return res.status(400).send({ message: "Cart item not found!" });
+      }
+
+      // Tính toán total_quantity và cập nhật giỏ hàng
+      const updatedTotalQuantity =
+        cart.total_quantity + (req.body.quantity - cartItem.quantity);
+
+      await db.cart.update(
+        {
+          total_quantity: updatedTotalQuantity,
+        },
+        {
+          where: {
+            user_id: req.user_id,
+          },
+        }
+      );
+
+      // Sau khi total_quantity đã được cập nhật, tính toán total
+      const updatedTotal =
+        cart.total +
+        (req.body.quantity * cartItem.books.price -
+          cartItem.quantity * cartItem.books.price);
+
+      // Cập nhật chi tiết giỏ hàng
+      await db.cart_details.update(
+        {
+          quantity: req.body.quantity,
+          total: req.body.quantity * cartItem.books.price,
+        },
+        {
+          where: {
+            cart_id: cart.id,
+            book_id: req.body.book_id,
+          },
+        }
+      );
+
+      // Cập nhật giỏ hàng với total
+      await db.cart.update(
+        {
+          total: updatedTotal,
+        },
+        {
+          where: {
+            user_id: req.user_id,
+          },
+        }
+      );
+
+      res.status(200).send({
+        message: "Cart updated successfully!",
+      });
+    } catch (err) {
+      res.status(500).send({
+        message: err.message || "Some error occurred while updating the cart.",
+      });
+    }
   },
 
   removeItem: async (req, res) => {
