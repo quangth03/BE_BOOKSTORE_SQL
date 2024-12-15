@@ -30,11 +30,15 @@ module.exports = {
     }
     // discount
     const discount = req.body.value ?? 0;
+    const payment_method = req.body.payment_method;
+    const status = req.body.status;
     let order = await db.order.create({
       user_id: req.user_id,
       total: cart.total - discount,
       total_quantity: cart.total_quantity,
       discount: discount,
+      payment_method: payment_method,
+      status: status,
     });
 
     const cartIteam = await db.cart_details.findAll({

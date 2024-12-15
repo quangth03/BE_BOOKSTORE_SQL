@@ -44,7 +44,6 @@ module.exports = (app) => {
   // find books by category
   router.post("/books/category", bookController.findByCategory);
 
-
   // Delete a Book with id
   router.delete("/books/:id", verify, bookController.delete);
 

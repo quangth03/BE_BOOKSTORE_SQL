@@ -4,7 +4,13 @@ const db = require("../models"); // Import models
 exports.getDashboardStats = async (req, res) => {
   try {
     // Lấy số lượng người dùng, đơn hàng, sách và thể loại
-    const userCount = await db.user.count();
+    // const userCount = await db.user.count();
+    const userCount = await db.user.count({
+      where: {
+        isAdmin: 0,
+        isVerified: 1,
+      },
+    });
     const orderCount = await db.order.count();
     const bookCount = await db.books.count();
     const genreCount = await db.category.count();

@@ -4,16 +4,23 @@ const verifySignUp = require("../middlewares/verifySignUp");
 const verify = require("../middlewares/authJwt").verifyToken_User;
 
 module.exports = (app) => {
+  // sign up
+  router.post(
+    "/signup",
+    [
+      verifySignUp.checkDuplicateUsernameOrEmail,
+      verifySignUp.registerValidator,
+    ],
+    userController.signup
+  );
+  router.get("/verify-email", userController.verifyEmail);
 
-    // sign up
-    router.post("/signup",[verifySignUp.checkDuplicateUsernameOrEmail, verifySignUp.registerValidator], userController.signup);
+  // sign in
+  router.post("/signin", userController.signin);
 
-    // sign in
-    router.post("/signin", userController.signin);
+  // change password
+  router.put("/changepassword", verify, userController.changePassword);
+  router.post("/forgot-password", userController.forgotPassword);
 
-    // change password
-    router.put("/changepassword", verify, userController.changePassword);
-    router.post("/forgot-password", userController.forgotPassword);
-
-    app.use('/auth', router);
-}
+  app.use("/auth", router);
+};
