@@ -6,6 +6,7 @@ const cartController = require("../controllers/cart.controller");
 const dashboardController = require("../controllers/dashboard.controller");
 const commentController = require("../controllers/comment.controller");
 const discountController = require("../controllers/discount.controller");
+const { upload } = require("../middlewares/cloudinary");
 const router = require("express").Router();
 const verify = require("../middlewares/authJwt").verifyToken_Admin;
 
@@ -94,6 +95,13 @@ module.exports = (app) => {
   router.delete("/discounts/:id", discountController.deleteDiscount);
 
   router.post("/blockUserAndSendEmail", userController.blockUserAndSendEmail);
+
+  router.post("/upload", upload.single("image"), (req, res) => {
+    if (!req.file) {
+      return res.status(400).send({ message: "No file uploaded" });
+    }
+    res.status(200).send({ imageUrl: req.file.path });
+  });
 
   app.use("/admin", router);
 };
