@@ -35,12 +35,16 @@ module.exports = {
 
   getAllDiscounts: async (req, res) => {
     try {
-      const data = await db.discount.findAll();
-      if (!data) {
+      const data = await db.discount.findAll({
+        order: [["createdAt", "DESC"]], // Thêm dòng này để sắp xếp theo createdAt giảm dần
+      });
+
+      if (!data || data.length === 0) {
         return res.status(404).send({
           message: "No discounts found!",
         });
       }
+
       res.status(200).json(data);
     } catch (err) {
       res.status(500).send({

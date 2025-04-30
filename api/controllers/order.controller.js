@@ -110,7 +110,10 @@ module.exports = {
 
   getAllOder: (req, res) => {
     db.order
-      .findAll({ include: [{ model: db.user, attributes: ["full_name"] }] })
+      .findAll({
+        include: [{ model: db.user, attributes: ["full_name"] }],
+        order: [["createdAt", "DESC"]], // Thêm dòng này để sắp xếp theo createdAt giảm dần
+      })
       .then((data) => {
         res.send(data);
       })
@@ -120,6 +123,7 @@ module.exports = {
         });
       });
   },
+
   updateOrder: (req, res) => {
     let { id, ...data } = req.body;
     db.order

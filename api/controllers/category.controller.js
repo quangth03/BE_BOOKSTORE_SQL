@@ -142,12 +142,23 @@ module.exports = {
   },
 
   adminFindAll: async (req, res) => {
-    const data = await db.category.findAll({});
-    if (!data) {
-      return res.status(400).send({
-        message: "Category not found!",
+    try {
+      const data = await db.category.findAll({
+        order: [["createdAt", "DESC"]], // Thêm phần sắp xếp theo createdAt giảm dần
+      });
+
+      if (!data || data.length === 0) {
+        return res.status(400).send({
+          message: "Category not found!",
+        });
+      }
+
+      res.status(200).json(data);
+    } catch (err) {
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while retrieving categories.",
       });
     }
-    res.status(200).json(data);
   },
 };
