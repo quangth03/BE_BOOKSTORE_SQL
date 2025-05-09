@@ -198,6 +198,7 @@ module.exports = {
       .findAll({
         attributes: { exclude: ["password"] },
         where: { isAdmin: 0, isVerified: 1 },
+        order: [["createdAt", "DESC"]],
       })
       .then((data) => {
         res.send(data);
