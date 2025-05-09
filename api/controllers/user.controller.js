@@ -34,8 +34,10 @@ module.exports = {
         const transporter = nodemailer.createTransport({
           service: "Gmail",
           auth: {
-            user: "lequangsang08102003@gmail.com",
-            pass: "oybv dfcq egmp tloa",
+            // user: "lequangsang08102003@gmail.com",
+            // pass: "oybv dfcq egmp tloa",
+            user: process.env.EMAIL_USER, // Lấy từ .env
+            pass: process.env.EMAIL_PASS, // Lấy từ .env
           },
         });
 
@@ -215,7 +217,7 @@ module.exports = {
         attributes: { exclude: ["password"] },
       })
       .then((data) => {
-        res.send(data);
+        res.send(data); // mac dinh tra ve status 200
       })
       .catch((err) => {
         res.status(500).send({

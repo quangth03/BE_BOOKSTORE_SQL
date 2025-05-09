@@ -5,9 +5,10 @@ const orderController = require("../controllers/order.controller");
 const cartController = require("../controllers/cart.controller");
 const discountController = require("../controllers/discount.controller");
 const wishListController = require("../controllers/wishList.controller");
+const chatBotController = require("../controllers/chatbot.controller");
 const router = require("express").Router();
 const verify = require("../middlewares/authJwt").verifyToken_User;
-
+const db = require("../models");
 module.exports = (app) => {
   // get profile
   router.get("/profile", verify, userController.findByid);
@@ -69,5 +70,6 @@ module.exports = (app) => {
   router.get("/topBooks", bookController.getTopSellingBooks);
   router.post("/order/update", verify, orderController.updateOrder);
 
+  router.post("/ask", chatBotController.ask);
   app.use("/user", router);
 };

@@ -134,6 +134,11 @@ module.exports = {
       },
     });
     if (!data) {
+      //Lỗi logic: findAll() luôn trả về một mảng, ngay cả khi không có dữ liệu, nên if (!data) sẽ luôn là false.
+
+      // Nếu không có dữ liệu, data = [] (mảng rỗng), nhưng if (!data) chỉ đúng nếu data = null hoặc undefined.
+
+      // Cách sửa đúng: Kiểm tra độ dài mảng (data.length === 0).
       return res.status(400).send({
         message: "Category not found!",
       });

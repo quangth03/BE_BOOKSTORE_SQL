@@ -36,8 +36,8 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
           );
         },
 
-        beforeDestroy: (cart_details, options) => {
-          sequelize.models.cart.decrement(
+        beforeDestroy: async (cart_details, options) => {
+          await sequelize.models.cart.decrement(
             {
               total: cart_details.total,
               total_quantity: cart_details.quantity,

@@ -349,7 +349,7 @@ module.exports = {
     }
 
     db.books
-      .findAndCountAll(queryOptions) // sử dụng findAndCountAll
+      .findAndCountAll(queryOptions) // sử dụng findAndCountAll - trả về object gồm tổng số bản ghi phù hợp với điều kiện where (count) và danh sách bản ghi được tìm thấy (rows)
       .then((result) => {
         if (result.rows.length > 0) {
           res.json({

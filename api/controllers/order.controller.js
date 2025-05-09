@@ -41,13 +41,13 @@ module.exports = {
       status: status,
     });
 
-    const cartIteam = await db.cart_details.findAll({
+    const cartItem = await db.cart_details.findAll({
       where: {
         cart_id: cart.id,
       },
     });
 
-    cartIteam.forEach(async (item) => {
+    cartItem.forEach(async (item) => {
       // Thêm chi tiết đơn hàng
       await db.order_details.create({
         order_id: order.id,
