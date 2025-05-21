@@ -28,6 +28,8 @@ require("./api/routes/auth.router")(app);
 require("./api/routes/admin.router")(app);
 require("./api/routes/user.router")(app);
 
+require("./api/utils/autoCancel");
+
 const port = dbconfig.PORT || 8080;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}.`);

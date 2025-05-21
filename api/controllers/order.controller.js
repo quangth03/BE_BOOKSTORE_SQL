@@ -1,92 +1,110 @@
 const db = require("../models");
-const { createPayment } = require("../utils/payment");
-const { findAll } = require("./category.controller");
+const { createPayment, getPaymented } = require("../utils/payment");
 
 module.exports = {
-  createOder: async (req, res) => {
-    if (!req.user_id) {
-      res.status(400).send({
-        message: "Content can not be empty!",
-      });
-      return;
-    }
-
-    let cart = await db.cart.findOne({
-      where: {
-        user_id: req.user_id,
-      },
-    });
-
-    if (cart != null) {
-      if (cart.total == 0) {
-        return res.status(400).send({
-          message: "Cart is empty!",
-        });
+  createOrder: async (req, res) => {
+    try {
+      // 1. Kiểm tra user & giỏ hàng
+      if (!req.user_id) {
+        return res.status(400).json({ message: "Missing user_id" });
       }
-    } else {
-      return res.status(400).send({
-        message: "Cart is empty!",
+
+      const cart = await db.cart.findOne({ where: { user_id: req.user_id } });
+      if (!cart || cart.total === 0) {
+        return res.status(400).json({ message: "Cart is empty!" });
+      }
+
+      // 2. Tạo đơn hàng trong DB
+      const discount = req.body.value ?? 0;
+      const paymentMethod = req.body.payment_method; // 'online' | 'cash'
+      const status = req.body.status; // 1 | 2 | …
+
+      const {
+        note,
+        to_name,
+        to_phone,
+        to_address,
+        to_ward_code,
+        to_district_id,
+        service_type_id,
+        payment_type_id,
+        required_note,
+        cod_amount,
+        weight,
+        items,
+      } = req.body;
+
+      const ghn_info = {
+        note,
+        to_name,
+        to_phone,
+        to_address,
+        to_ward_code,
+        to_district_id,
+        service_type_id,
+        payment_type_id,
+        required_note,
+        cod_amount,
+        weight,
+        items,
+      };
+
+      const order = await db.order.create({
+        user_id: req.user_id,
+        total: cart.total - discount,
+        total_quantity: cart.total_quantity,
+        discount,
+        payment_method: paymentMethod,
+        status,
+        ghn_info,
       });
-    }
-    // discount
-    const discount = req.body.value ?? 0;
-    const payment_method = req.body.payment_method;
-    const status = req.body.status;
-    let order = await db.order.create({
-      user_id: req.user_id,
-      total: cart.total - discount,
-      total_quantity: cart.total_quantity,
-      discount: discount,
-      payment_method: payment_method,
-      status: status,
-    });
 
-    const cartItem = await db.cart_details.findAll({
-      where: {
-        cart_id: cart.id,
-      },
-    });
-
-    cartItem.forEach(async (item) => {
-      // Thêm chi tiết đơn hàng
-      await db.order_details.create({
-        order_id: order.id,
-        book_id: item.book_id,
-        quantity: item.quantity,
-        total: item.total,
+      // 3. Copy items sang order_details & trừ tồn kho
+      const cartItems = await db.cart_details.findAll({
+        where: { cart_id: cart.id },
       });
 
-      // Cập nhật số lượng sản phẩm trong kho
-      let book = await db.books.findByPk(item.book_id);
-      if (book) {
-        await db.books.update(
-          { quantity: book.quantity - item.quantity }, // Trừ số lượng trong kho
+      for (const item of cartItems) {
+        await db.order_details.create({
+          order_id: order.id,
+          book_id: item.book_id,
+          quantity: item.quantity,
+          total: item.total,
+        });
+
+        // cập nhật tồn kho
+        await db.books.increment(
+          { quantity: -item.quantity },
           { where: { id: item.book_id } }
         );
       }
-    });
 
-    try {
-      db.cart.destroy({
-        where: { id: cart.id },
-      });
-    } catch (error) {
-      return res.status(500).send({
-        message: err.message || "Some error occurred while destroy the cart.",
-      });
-    }
+      // 4. Xoá giỏ hàng
+      await db.cart.destroy({ where: { id: cart.id } });
 
-    const paymentRS = await createPayment(order.id, order.total);
-    if (!paymentRS) {
-      return res.status(500).send({
-        message: err.message || "payment error",
-      });
+      // 5. Nếu thanh toán ONLINE → tạo PayUrl (MoMo)
+      if (paymentMethod === "online") {
+        const paymentRS = await createPayment(order.id, order.total); // => { payUrl, ... }
+
+        if (!paymentRS) {
+          return res.status(500).json({ message: "Payment error" });
+        }
+
+        await db.order.update(
+          { pay_url: paymentRS.payUrl },
+          { where: { id: order.id } }
+        );
+        return res.status(200).json(paymentRS); // <- DỪNG TẠI ĐÂY
+      }
+
+      // 6. Nếu COD → trả về kết quả ngay
+      return res
+        .status(200)
+        .json({ message: "Create order success", orderId: order.id });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: err.message || "Server error" });
     }
-    await db.order.update(
-      { pay_url: paymentRS.payUrl },
-      { where: { id: order.id } }
-    );
-    res.status(200).send(paymentRS);
   },
 
   deleteOrder: (req, res) => {
@@ -124,19 +142,104 @@ module.exports = {
       });
   },
 
-  updateOrder: (req, res) => {
-    let { id, ...data } = req.body;
-    db.order
-      .update(data, { where: { id: id } })
-      .then((data) => {
-        res.send(data);
-      })
-      .catch((err) => {
-        res.status(500).send({
-          message: err.message || "Some error occurred while retrieving Order.",
+  updateOrder: async (req, res) => {
+    try {
+      const { id, status, ...data } = req.body;
+
+      // Cập nhật trạng thái đơn hàng trước
+      await db.order.update({ status, ...data }, { where: { id } });
+
+      // Lấy đơn hàng để dùng tiếp
+      const order = await db.order.findByPk(id);
+
+      // ✅ Trường hợp status = 7 → hủy đơn GHN
+      if (status == 7) {
+        const orderDetails = await db.order_details.findAll({
+          where: { order_id: id },
         });
+
+        for (const item of orderDetails) {
+          await db.books.increment(
+            { quantity: item.quantity },
+            { where: { id: item.book_id } }
+          );
+        }
+
+        // Nếu có đơn GHN, thì hủy luôn:
+        if (order?.ghn_code) {
+          try {
+            await fetch(
+              "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/switch-status/cancel",
+              {
+                method: "POST",
+                headers: {
+                  Token: process.env.GHN_TOKEN,
+                  ShopId: process.env.GHN_SHOP_ID,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  order_codes: [order.ghn_code],
+                }),
+              }
+            );
+          } catch (err) {
+            console.error("GHN cancel error:", err);
+          }
+        }
+      }
+
+      // ✅ Nếu status = 3 → tạo đơn GHN
+      if (status == 3) {
+        if (!order || !order.ghn_info) {
+          return res
+            .status(400)
+            .json({ message: "Order or ghn_info not found" });
+        }
+
+        const ghnPayload = {
+          ...order.ghn_info,
+          client_order_code: String(order.id),
+        };
+
+        const ghnRes = await fetch(
+          "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Token: process.env.GHN_TOKEN,
+              ShopId: process.env.GHN_SHOP_ID,
+            },
+            body: JSON.stringify(ghnPayload),
+          }
+        );
+
+        const ghnJson = await ghnRes.json();
+
+        if (ghnJson.code !== 200) {
+          return res
+            .status(500)
+            .json({ message: "GHN create failed", detail: ghnJson });
+        }
+
+        await db.order.update(
+          {
+            ghn_response: ghnJson.data,
+            ghn_code: ghnJson.data.order_code,
+          },
+          { where: { id } }
+        );
+      }
+
+      return res.status(200).json({ message: "Order updated successfully" });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        message: err.message || "Error while updating order",
       });
+    }
   },
+
   getOders: async (req, res) => {
     let user_id = null;
     if (req.isAdmin) {
@@ -191,6 +294,7 @@ module.exports = {
         });
       });
   },
+
   createPay: async (req, res) => {
     try {
       // check order id in user
@@ -215,11 +319,21 @@ module.exports = {
       });
     }
   },
+
   payCallback: async (req, res) => {
+    console.log(req.body);
+    //thanh toan thanh cong thi goi callback
+    //req.body: orderId, resultCode, signature,...
     try {
       if (req.body.resultCode == 0) {
         await db.order.update(
           { status: 2 },
+          { where: { id: req.body.orderId } }
+        );
+      }
+      if (req.body.resultCode == 1002) {
+        await db.order.update(
+          { status: 8 },
           { where: { id: req.body.orderId } }
         );
       }
@@ -229,5 +343,11 @@ module.exports = {
         message: "Order not found!",
       });
     }
+  },
+
+  checkTransitionPayment: async (req, res) => {
+    const result = await getPaymented(req.body.orderId);
+    // const json = await result.json();
+    res.json(result);
   },
 };

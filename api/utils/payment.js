@@ -65,6 +65,7 @@ const createPayment = async (orderId, amount) => {
 
   try {
     const response = await axios(options);
+    console.log("💬 MoMo response:", response.data);
     if (response.status === 200) {
       return response.data;
     } else {
@@ -116,4 +117,5 @@ const getPaymented = async (orderId) => {
 
 module.exports = {
   createPayment,
+  getPaymented,
 };

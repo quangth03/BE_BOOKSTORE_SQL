@@ -92,6 +92,9 @@ module.exports = {
         //     : `Không tìm thấy sách '${title}'.`;
         //   break;
         // }
+        // co nhung phuong thuc thanh toan nao?
+        // tom tat noi dung cua 1 cuon sach
+        // toi muon mua 1 cuon sach: so thich, the loai => goi y sach trong database bao gom tom tat 1 doan
         case "book_availability": {
           const book = await Book.findOne({ title: new RegExp(title, "i") });
           reply = book
