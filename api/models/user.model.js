@@ -45,6 +45,7 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
       },
       blockReason: {
         type: DataTypes.STRING,
+        // allowNull: false, // neu nhu vay no se loi o try trong ham signup
       },
       // Thêm trường isVerified để lưu trạng thái xác nhận email
       isVerified: {

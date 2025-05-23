@@ -31,6 +31,7 @@ module.exports = {
       return res.status(403).send({ message: "No token provided!" });
     }
     jwt.verify(token, config.secret, (err, decoded) => {
+      //decoded là thông tin đã giải mã từ token
       if (err) {
         return res
           .status(401)

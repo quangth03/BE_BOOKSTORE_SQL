@@ -32,6 +32,15 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: "Tiền mặt", // Giá trị mặc định
       },
+      ghn_info: DataTypes.JSON,
+      ghn_response: {
+        type: DataTypes.JSON,
+        allowNull: true,
+      },
+      ghn_code: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
     },
     {
       // Options

@@ -40,6 +40,9 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
           min: 0,
         },
       },
+      purchase_price: {
+        type: DataTypes.INTEGER,
+      },
     }
   );
 

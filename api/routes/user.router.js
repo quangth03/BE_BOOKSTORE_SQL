@@ -5,9 +5,11 @@ const orderController = require("../controllers/order.controller");
 const cartController = require("../controllers/cart.controller");
 const discountController = require("../controllers/discount.controller");
 const wishListController = require("../controllers/wishList.controller");
+const shippingController = require("../controllers/shipping.controller");
+const chatBotController = require("../controllers/chatbot.controller");
 const router = require("express").Router();
 const verify = require("../middlewares/authJwt").verifyToken_User;
-
+const db = require("../models");
 module.exports = (app) => {
   // get profile
   router.get("/profile", verify, userController.findByid);
@@ -40,7 +42,7 @@ module.exports = (app) => {
   router.delete("/cart", verify, cartController.removeItem);
 
   // create order
-  router.post("/order", verify, orderController.createOder);
+  router.post("/order", verify, orderController.createOrder);
 
   // delete order
   // router.delete("/order", verify, orderController.deleteOrder);
@@ -59,6 +61,7 @@ module.exports = (app) => {
   router.post("/comment", verify, bookController.comment);
   router.post("/createPay", verify, orderController.createPay);
   router.post("/momoCallBack", orderController.payCallback);
+  router.post("/checkTransition", orderController.checkTransitionPayment);
 
   router.get("/discounts/valid", discountController.getValidDiscounts);
 
@@ -69,5 +72,9 @@ module.exports = (app) => {
   router.get("/topBooks", bookController.getTopSellingBooks);
   router.post("/order/update", verify, orderController.updateOrder);
 
+  router.get("/province", shippingController.getProvince);
+  router.get("/district/:provinceId", shippingController.getDistrict);
+  router.get("/ward/:districtId", shippingController.getWard);
+  router.post("/ask", chatBotController.ask);
   app.use("/user", router);
 };
