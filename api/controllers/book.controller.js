@@ -314,13 +314,26 @@ module.exports = {
 
     let queryOptions = {
       where: {
-        author: {
-          [db.Op.substring]: author,
-        },
+        // author: {
+        //   [db.Op.substring]: author,
+        // },
+        // isDelete: 0,
+        // title: {
+        //   [db.Op.substring]: title,
+        // },
         isDelete: 0,
-        title: {
-          [db.Op.substring]: title,
-        },
+        [db.Op.or]: [
+          {
+            title: {
+              [db.Op.substring]: title,
+            },
+          },
+          {
+            author: {
+              [db.Op.substring]: title, // dùng cùng biến `title` để tìm cả trong tên sách và tác giả
+            },
+          },
+        ],
         price: {
           [db.Op.between]: [from, to],
         },
@@ -614,7 +627,6 @@ module.exports = {
     (req.body.user_id = req.user_id),
       db.comment.create(req.body).then((data) => {
         if (data) {
-          console.log("rs ==>", data);
           res.json(data);
         } else {
           res.send({

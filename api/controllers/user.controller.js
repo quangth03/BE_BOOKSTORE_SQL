@@ -118,9 +118,49 @@ module.exports = {
       password: req.body.password,
     };
 
+    const getTotalOrderValue = async (userId) => {
+      const result = await db.order.sum("total", {
+        where: { user_id: userId },
+      });
+      return result || 0;
+    };
+    const updateUserStatusToVIP = async (userId, userEmail) => {
+      try {
+        const totalValue = await getTotalOrderValue(userId);
+        const user = await db.user.findByPk(userId);
+
+        if (totalValue >= 3000000 && !user.isVip) {
+          // Tạo transporter gửi mail (có thể cấu hình lại)
+          const transporter = nodemailer.createTransport({
+            service: "Gmail",
+            auth: {
+              user: "lequangsang08102003@gmail.com",
+              pass: "oybv dfcq egmp tloa", // nhớ thay bằng mật khẩu ứng dụng thực tế
+            },
+          });
+
+          // Gửi mail báo trước
+          await transporter.sendMail({
+            from: '"Book Store" <lequangsang08102003@gmail.com>',
+            to: userEmail,
+            subject: "Chúc mừng bạn trở thành thành viên VIP!",
+            html: `<p>Xin chúc mừng! Do tổng giá trị đơn hàng của bạn đạt ${totalValue} VND, bạn đã được nâng cấp lên thành viên VIP.</p>
+                <p>Tài khoản của bạn mua hàng sẽ được giảm giá gấp 2 lần tài khoản thường.</p>
+               <p>Cảm ơn bạn đã ủng hộ chúng tôi!</p>`,
+          });
+
+          // Cập nhật trạng thái VIP sau khi gửi mail thành công
+          await db.user.update({ isVip: true }, { where: { id: userId } });
+
+          console.log("User updated to VIP and email sent.");
+        }
+      } catch (error) {
+        console.error("Error updating VIP status or sending email:", error);
+      }
+    };
     db.user
       .findOne({ where: { username: user.username } })
-      .then((data) => {
+      .then(async (data) => {
         if (!data) {
           return res
             .status(401)
@@ -145,11 +185,16 @@ module.exports = {
         if (!bcrypt.compareSync(user.password, data.password)) {
           return res.status(401).send({ message: "Wrong Password!" });
         }
-
+        await updateUserStatusToVIP(data.id, data.email);
         const token1 = config.secret;
         const encodedToken = Buffer.from(token1).toString("base64");
         var token = jwt.sign(
-          { id: data.id, isAdmin: data.isAdmin, token: encodedToken },
+          {
+            id: data.id,
+            isAdmin: data.isAdmin,
+            isVip: data.isVip,
+            token: encodedToken,
+          },
           config.secret,
           { expiresIn: 60 * 60 * 24 }
         );

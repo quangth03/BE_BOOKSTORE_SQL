@@ -55,15 +55,16 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
       verificationToken: {
         type: DataTypes.STRING,
       },
+      isVip: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
     },
     {
       // Triggers
       hooks: {
         afterCreate: (user, options) => {
-          console.log("User created: " + user.id);
-          sequelize.models.cart.create({ user_id: user.id }).then((cart) => {
-            console.log("Cart created: " + cart.id);
-          });
+          sequelize.models.cart.create({ user_id: user.id }).then((cart) => {});
         },
       },
     }

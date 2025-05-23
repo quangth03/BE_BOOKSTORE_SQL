@@ -19,6 +19,7 @@ module.exports = {
       }
       req.user_id = decoded.id;
       req.isAdmin = decoded.isAdmin;
+      req.isVip = decoded.isVip;
       next();
     });
   },
@@ -36,7 +37,8 @@ module.exports = {
           .send({ message: `Unauthorized! Error: ${err.message}` });
       }
       req.user_id = decoded.id;
-      next();
+      req.isVip = decoded.isVip;
+      return next();
     });
   },
 };

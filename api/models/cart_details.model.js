@@ -16,11 +16,16 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
       // Triggers
       hooks: {
         afterCreate: async (cart_details, options) => {
+          const isVip = options.isVip || false;
           const data = await sequelize.models.book.findOne({
             where: { id: cart_details.book_id },
           });
-          let price =
-            data.price * (1 - data.discount / 100) * cart_details.quantity;
+          let priceSell =
+            data.price *
+            (1 - (isVip ? 2 * data.discount : data.discount) / 100);
+          priceSell = Math.ceil(priceSell);
+          console.log("priceSell", priceSell);
+          let price = priceSell * cart_details.quantity;
           await sequelize.models.cart_details.increment(
             { total: price },
             {

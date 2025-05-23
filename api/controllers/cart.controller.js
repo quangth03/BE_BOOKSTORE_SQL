@@ -48,11 +48,16 @@ module.exports = {
               "Quantity must be greater than zero! Book haven't added to cart",
           });
         } else {
-          db.cart_details.create({
-            cart_id: cart.id,
-            book_id: book.id,
-            quantity: quantity,
-          });
+          db.cart_details.create(
+            {
+              cart_id: cart.id,
+              book_id: book.id,
+              quantity: quantity,
+            },
+            {
+              isVip: req.isVip,
+            }
+          );
         }
       } else {
         if (quantity < 0 && cart_details.quantity <= Math.abs(quantity)) {
@@ -68,7 +73,10 @@ module.exports = {
             message: "Item was removed successfully!",
           });
         } else {
-          const sellPrice = book.price * (1 - book.discount / 100);
+          let sellPrice =
+            book.price *
+            (1 - (req.isVip ? 2 * book.discount : book.discount) / 100);
+          sellPrice = Math.ceil(sellPrice);
           await db.cart_details.update(
             {
               quantity: cart_details.quantity + quantity,
