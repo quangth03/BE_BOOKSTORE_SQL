@@ -75,6 +75,7 @@ module.exports = (app) => {
   router.get("/province", shippingController.getProvince);
   router.get("/district/:provinceId", shippingController.getDistrict);
   router.get("/ward/:districtId", shippingController.getWard);
+  router.post("/shippingFee", shippingController.getShippingFee);
   router.post("/ask", chatBotController.ask);
   app.use("/user", router);
 };

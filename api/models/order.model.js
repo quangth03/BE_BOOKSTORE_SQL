@@ -41,6 +41,9 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      ghn_fee: {
+        type: DataTypes.INTEGER,
+      },
     },
     {
       // Options
