@@ -334,12 +334,22 @@ module.exports = {
             },
           },
         ],
-        price: {
-          [db.Op.between]: [from, to],
-        },
-        publication_date: {
-          [db.Op.between]: [new Date(year, 0, 0), new Date(yearEnd, 0, 0)],
-        },
+        // price: {
+        //   [db.Op.between]: [from, to],
+        // },
+        // publication_date: {
+        //   [db.Op.between]: [new Date(year, 0, 0), new Date(yearEnd, 0, 0)],
+        // },
+        [db.Op.and]: [
+          db.Sequelize.literal(
+            `price * (1 - discount / 100) BETWEEN ${from} AND ${to}`
+          ),
+          {
+            publication_date: {
+              [db.Op.between]: [new Date(year, 0, 0), new Date(yearEnd, 0, 0)],
+            },
+          },
+        ],
       },
       offset: (page - 1) * limit,
       limit: limit,
