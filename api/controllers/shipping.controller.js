@@ -84,4 +84,24 @@ module.exports = {
       res.status(500).json({ error: "Failed to fetch districts" });
     }
   },
+  getShippingFee: async (req, res) => {
+    try {
+      const fee = await fetch(
+        "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            token: process.env.GHN_TOKEN,
+          },
+          body: JSON.stringify(req.body),
+        }
+      );
+      const feeJson = await fee.json();
+      res.json(feeJson);
+    } catch (error) {
+      console.error("GHN error:", error.message);
+      res.status(500).json({ error: "Failed to calculate fee" });
+    }
+  },
 };

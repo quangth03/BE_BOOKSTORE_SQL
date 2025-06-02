@@ -1,18 +1,48 @@
 const db = require("../models");
-const { extractIntentFromMessage } = require("../utils/chatbot");
-const { getTopSellingBooks } = require("./book.controller");
+const {
+  extractIntentFromMessage,
+  getGeminiSummary,
+  getGeminiDescription,
+} = require("../utils/chatbot");
 
 module.exports = {
   ask: async (req, res) => {
     const { message } = req.body;
 
     try {
-      const { intent, title, author, category, orderCode } =
+      const { intent, title, author, category } =
         await extractIntentFromMessage(message);
 
       let reply = "";
 
       switch (intent) {
+        case "create_description": {
+          try {
+            const description = await getGeminiDescription(title, author);
+            reply = description;
+          } catch (err) {
+            console.error("Gemini description error:", err);
+            reply =
+              "Xin lỗi, không thể tạo mô tả sách do lỗi kết nối đến Gemini.";
+          }
+          break;
+        }
+        case "book_summary": {
+          if (!title) {
+            reply = "Bạn vui lòng cung cấp tên sách cần tóm tắt.";
+            break;
+          }
+
+          try {
+            const summary = await getGeminiSummary(title);
+            reply = `Tóm tắt sách "${title}": ${summary}`;
+          } catch (err) {
+            console.error("Gemini summary error:", err);
+            reply =
+              "Xin lỗi, không thể tóm tắt sách do lỗi kết nối đến Gemini.";
+          }
+          break;
+        }
         case "get_discount_books": {
           const books = await db.books.findAll({
             where: { discount: { [db.Op.gt]: 0 } },
@@ -58,47 +88,36 @@ module.exports = {
             .join(", ")}`;
           break;
         }
-        // case "check_order_status": {
-        //   const order = await Order.findOne({ code: orderCode });
-        //   reply = order
-        //     ? `Đơn hàng ${order.code} hiện đang ở trạng thái: ${order.status}`
-        //     : "Không tìm thấy đơn hàng.";
-        //   break;
-        // }
-        // case "find_by_author": {
-        //   const books = await Book.find({ author: new RegExp(author, "i") });
-        //   reply = books.length
-        //     ? `Các sách của ${author}: ${books.map((b) => b.title).join(", ")}`
-        //     : `Không tìm thấy sách của ${author}.`;
-        //   break;
-        // }
-        // case "find_by_category": {
-        //   const books = await Book.find({
-        //     category: new RegExp(category, "i"),
+        // case "recommend_book": {
+        //   const book = await db.books.findOne({
+        //     where: {
+        //       category: {
+        //         [Op.like]: `%${category}%`
+        //       },
+        //       isDelete: 0,
+        //     },
+        //     order: db.sequelize.random(), // lấy ngẫu nhiên
         //   });
-        //   reply = books.length
-        //     ? `Các sách thuộc thể loại ${category}: ${books
-        //         .map((b) => b.title)
-        //         .join(", ")}`
-        //     : `Không có sách trong thể loại ${category}.`;
         //   break;
         // }
-        // case "book_price": {
-        //   const book = await Book.findOne({ title: new RegExp(title, "i") });
-        //   reply = book
-        //     ? `Giá của sách '${
-        //         book.title
-        //       }' là ${book.price.toLocaleString()} VND`
-        //     : `Không tìm thấy sách '${title}'.`;
-        //   break;
-        // }
-        // co nhung phuong thuc thanh toan nao?
-        // tom tat noi dung cua 1 cuon sach
-        // toi muon mua 1 cuon sach: so thich, the loai => goi y sach trong database bao gom tom tat 1 doan
+        case "faq_payment_methods": {
+          reply =
+            "Chúng tôi hỗ trợ các phương thức thanh toán sau: " +
+            "1. Thanh toán tiền mặt, 2. Thanh toán qua ví điện tử Momo";
+          break;
+        }
         case "book_availability": {
-          const book = await Book.findOne({ title: new RegExp(title, "i") });
+          const book = await db.books.findOne({
+            where: db.sequelize.where(
+              db.sequelize.fn("LOWER", db.sequelize.col("title")),
+              "LIKE",
+              `%${title.toLowerCase()}%`
+            ),
+          });
+
+          console.log(book);
           reply = book
-            ? `${book.title} ${book.inStock ? "còn hàng" : "đã hết hàng"}`
+            ? `${book.title} ${book.quantity ? "còn hàng" : "đã hết hàng"}`
             : `Không tìm thấy sách '${title}'.`;
           break;
         }
@@ -114,7 +133,7 @@ module.exports = {
         default:
           reply = "Xin lỗi, tôi chưa hiểu rõ yêu cầu của bạn.";
       }
-
+      console.log("reply:", reply);
       return res.json({ reply });
     } catch (err) {
       console.error("Gemini chatbot error:", err);

@@ -32,6 +32,7 @@ module.exports = {
         cod_amount,
         weight,
         items,
+        ghn_fee,
       } = req.body;
 
       const ghn_info = {
@@ -48,6 +49,7 @@ module.exports = {
         weight,
         items,
       };
+      console.log("GHN FEE:", ghn_fee); // check có ra số không
 
       const order = await db.order.create({
         user_id: req.user_id,
@@ -57,6 +59,7 @@ module.exports = {
         payment_method: paymentMethod,
         status,
         ghn_info,
+        ghn_fee,
       });
 
       // 3. Copy items sang order_details & trừ tồn kho
@@ -254,6 +257,7 @@ module.exports = {
         order: [["createdAt", "DESC"]],
       })
       .then((data) => {
+        // console.log(data);
         res.json(data);
       })
       .catch((err) => {

@@ -137,12 +137,6 @@ module.exports = {
         },
       });
 
-      if (data.length === 0) {
-        return res.status(404).send({
-          message: "No valid discounts found!",
-        });
-      }
-
       res.status(200).json(data);
     } catch (err) {
       res.status(500).send({
