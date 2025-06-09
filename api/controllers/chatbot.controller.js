@@ -130,6 +130,11 @@ module.exports = {
           reply = "Thời gian giao hàng dự kiến từ 2-4 ngày làm việc.";
           break;
         }
+        case "out_of_scope": {
+          reply =
+            "Xin lỗi, tôi là chatbot hỗ trợ thông tin liên quan đến cửa hàng sách. Câu hỏi của bạn hiện nằm ngoài phạm vi hỗ trợ của tôi. Bạn vui lòng đặt câu hỏi trong phạm vi đó nhé.";
+          break;
+        }
         default:
           reply = "Xin lỗi, tôi chưa hiểu rõ yêu cầu của bạn.";
       }

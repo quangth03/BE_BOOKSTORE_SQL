@@ -36,24 +36,59 @@ async function extractIntentFromMessage(message) {
                   Câu: "Tôi muốn mua sách về khoa học, bạn có gợi ý không?"
                   → { "intent": "recommend_book", "title": null, "author": null, "category": "khoa học", "orderCode": null }
 
+                  Câu: "Tổng thống Việt Nam hiện tại là ai?"
+                  → { "intent": "out_of_scope", "title": null, "author": null, "category": null, "orderCode": null }
+
+                  Câu: "Viết cho tôi bài văn về tình yêu"
+                  → { "intent": "out_of_scope", "title": null, "author": null, "category": null, "orderCode": null }
+
+                  Nếu người dùng nhập câu hỏi không rõ ràng, vô nghĩa (ví dụ: "alksdj", "123!@#") thì intent là "default".
+
                   Khi trích xuất tên sách, hãy đảm bảo lấy đúng tiêu đề sách được nhắc đến trong câu hỏi, không tự suy luận hoặc thay đổi tên sách. Nếu không chắc chắn, để title là null.
 
                   Chỉ trả về kết quả JSON đúng định dạng trên. Không giải thích gì thêm.
 
                   Câu hỏi: "${message}"
                   `;
-  const result = await model.generateContent(prompt);
-  const response = await result.response.text();
-  console.log("Gemini raw response:", response);
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response.text();
 
-  // Loại bỏ markdown code block nếu có
-  const cleaned = response
-    .replace(/```json\n?/, "") // Xóa mở đầu ```json
-    .replace(/```/, "") // Xóa kết thúc ```
-    .trim();
-  console.log("cleaned", cleaned);
+    const cleaned = response
+      .replace(/```json\n?/, "")
+      .replace(/```/, "")
+      .trim();
 
-  return JSON.parse(cleaned);
+    console.log("Gemini raw response:", response);
+    console.log("cleaned", cleaned);
+
+    const parsed = JSON.parse(cleaned);
+
+    // Nếu Gemini trả về intent thì dùng
+    if (parsed && parsed.intent) {
+      return parsed;
+    }
+
+    // Nếu không có intent thì trả về default
+    return {
+      intent: "default",
+      title: null,
+      author: null,
+      category: null,
+      orderCode: null,
+    };
+  } catch (err) {
+    console.error("Gemini parsing error:", err);
+
+    // Nếu lỗi không parse được → default
+    return {
+      intent: "default",
+      title: null,
+      author: null,
+      category: null,
+      orderCode: null,
+    };
+  }
 }
 
 async function getGeminiSummary(title) {
