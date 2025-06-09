@@ -9,6 +9,9 @@ const sequelize = new Sequelize(
     host: config.db.DB_HOST,
     port: config.db.DB_PORT,
     dialect: config.db.dialect,
+    dialectOptions: {
+      connectTimeout: 60000, // Tăng timeout lên 60 giây
+    },
     operatorsAliases: false,
 
     pool: {
