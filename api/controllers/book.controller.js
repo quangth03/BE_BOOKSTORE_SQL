@@ -217,9 +217,15 @@ module.exports = {
     let sortD = req.query.sortD;
     let sortBy = req.query.sort;
     let limit = parseInt(req.query.limit);
+    let search = req.query.search || "";
 
     author = author ? author : "";
     title = title ? title : "";
+
+    if (search.trim() !== "") {
+      title = search.trim();
+    }
+
     from = from ? from : 0;
     to = to ? to : 1000000000; // 1 tỷ =)))
     let yearEnd = 0;
