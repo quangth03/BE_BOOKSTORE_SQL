@@ -1,5 +1,5 @@
 module.exports = {
-  PORT: process.env.DB_PORT,
+  DB_PORT: process.env.DB_PORT,
 
   db: {
     DB_HOST: process.env.DB_HOST,
