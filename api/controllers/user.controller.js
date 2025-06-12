@@ -41,7 +41,7 @@ module.exports = {
           },
         });
 
-        const confirmationUrl = `http://localhost:3000/verify-email?token=${verificationToken}`;
+        const confirmationUrl = `https://fe-bookstore-sql.vercel.app/verify-email?token=${verificationToken}`;
 
         transporter.sendMail({
           from: '"Book Store" <your-email@gmail.com>',
