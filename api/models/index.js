@@ -7,7 +7,11 @@ const sequelize = new Sequelize(
   config.db.DB_PASS,
   {
     host: config.db.DB_HOST,
+    port: config.db.DB_PORT,
     dialect: config.db.dialect,
+    dialectOptions: {
+      connectTimeout: 60000, // Thời gian kết nối tối đa
+    },
     operatorsAliases: false,
 
     pool: {
