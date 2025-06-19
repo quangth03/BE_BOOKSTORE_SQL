@@ -10,7 +10,10 @@ module.exports = {
 
     // let quantity = req.body.quantity == null ? 1 : parseInt(req.body.quantity);
     let quantity = parseInt(req.body.quantity);
-    if (isNaN(quantity) || quantity < 1) {
+    // if (isNaN(quantity) || quantity < 1) {
+    //   quantity = 1;
+    // }
+    if (isNaN(quantity) || typeof quantity !== "number") {
       quantity = 1;
     }
     let cart = await db.cart.findOne({

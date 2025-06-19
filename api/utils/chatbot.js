@@ -74,7 +74,7 @@ async function getGeminiDescription(title, author) {
   const prompt = `
   Hãy viết một đoạn mô tả ngắn gọn (không quá 3 dòng) bằng tiếng Việt cho cuốn sách có tựa đề "${title}" của tác giả "${author}". 
   Mô tả cần rõ ràng, dễ hiểu, truyền cảm hứng hoặc hấp dẫn người đọc.
-  Nếu bạn không có đủ thông tin về cuốn sách này, hãy nói rằng bạn không chắc chắn về nội dung của nó.
+  Nếu bạn không có đủ thông tin về cuốn sách này, hãy nói rằng bạn không có đủ thông tin về nội dung của nó.
 `;
 
   const result = await model.generateContent(prompt);

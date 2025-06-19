@@ -255,21 +255,32 @@ module.exports = {
       });
   },
 
-  findByid: (req, res) => {
+  findByid: async (req, res) => {
     const id = req.user_id;
 
-    db.user
-      .findByPk(id, {
+    try {
+      const user = await db.user.findByPk(id, {
         attributes: { exclude: ["password"] },
-      })
-      .then((data) => {
-        res.send(data); // mac dinh tra ve status 200
-      })
-      .catch((err) => {
-        res.status(500).send({
-          message: "Error retrieving user with id=" + id,
-        });
       });
+
+      if (!user) {
+        return res.status(404).send({ message: "User not found." });
+      }
+
+      const totalOrderValue = await db.order.sum("total", {
+        where: { user_id: id },
+      });
+
+      // Gộp thông tin user và tổng tiền
+      res.send({
+        ...user.toJSON(),
+        totalOrderValue: totalOrderValue || 0,
+      });
+    } catch (err) {
+      res.status(500).send({
+        message: "Error retrieving user with id=" + id,
+      });
+    }
   },
 
   changePassword: async (req, res) => {

@@ -3,6 +3,39 @@ const { createPayment, getPaymented } = require("../utils/payment");
 
 module.exports = {
   createOrder: async (req, res) => {
+    const updateUserStatusToVIP = async (userId, userEmail) => {
+      try {
+        const totalValue = await db.order.sum("total", {
+          where: { user_id: userId },
+        });
+        const user = await db.user.findByPk(userId);
+
+        if (totalValue >= 3000000 && !user.isVip) {
+          const transporter = nodemailer.createTransport({
+            service: "Gmail",
+            auth: {
+              user: "lequangsang08102003@gmail.com",
+              pass: "oybv dfcq egmp tloa", // dùng app password
+            },
+          });
+
+          await transporter.sendMail({
+            from: '"Book Store" <lequangsang08102003@gmail.com>',
+            to: userEmail,
+            subject: "Chúc mừng bạn trở thành thành viên VIP!",
+            html: `
+          <p>Xin chúc mừng! Tổng giá trị đơn hàng của bạn đã đạt ${totalValue.toLocaleString()} VND.</p>
+          <p>Tài khoản của bạn đã được nâng cấp lên thành viên VIP với nhiều ưu đãi hấp dẫn.</p>
+        `,
+          });
+
+          await db.user.update({ isVip: true }, { where: { id: userId } });
+          console.log("User updated to VIP and email sent.");
+        }
+      } catch (error) {
+        console.error("Error updating VIP status or sending email:", error);
+      }
+    };
     try {
       // 1. Kiểm tra user & giỏ hàng
       if (!req.user_id) {
@@ -100,6 +133,8 @@ module.exports = {
         return res.status(200).json(paymentRS); // <- DỪNG TẠI ĐÂY
       }
 
+      const user = await db.user.findByPk(req.user_id);
+      await updateUserStatusToVIP(req.user_id, user.email);
       // 6. Nếu COD → trả về kết quả ngay
       return res
         .status(200)

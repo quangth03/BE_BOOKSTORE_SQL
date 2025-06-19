@@ -7,6 +7,7 @@ const discountController = require("../controllers/discount.controller");
 const wishListController = require("../controllers/wishList.controller");
 const shippingController = require("../controllers/shipping.controller");
 const chatBotController = require("../controllers/chatbot.controller");
+const userViewedBook = require("../controllers/userViewedBook.controller");
 const router = require("express").Router();
 const verify = require("../middlewares/authJwt").verifyToken_User;
 const db = require("../models");
@@ -77,5 +78,12 @@ module.exports = (app) => {
   router.get("/ward/:districtId", shippingController.getWard);
   router.post("/shippingFee", shippingController.getShippingFee);
   router.post("/ask", chatBotController.ask);
+  router.post("/viewed-books", verify, userViewedBook.recordViewedBook);
+  router.get("/viewed-books", verify, userViewedBook.getBooksByUserView);
+  router.delete(
+    "/viewed-books/:userId",
+    verify,
+    userViewedBook.deleteViewHistoryByUser
+  );
   app.use("/user", router);
 };

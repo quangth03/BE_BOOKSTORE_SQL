@@ -28,6 +28,11 @@ db.sequelize = sequelize;
 db.books = require("./book.model.js")(sequelize, Sequelize, DataTypes);
 db.user = require("./user.model.js")(sequelize, Sequelize, DataTypes);
 db.cart = require("./cart.model.js")(sequelize, Sequelize, DataTypes);
+db.user_viewed_book = require("./userViewedBook.model.js")(
+  sequelize,
+  Sequelize,
+  DataTypes
+);
 db.cart_details = require("./cart_details.model.js")(
   sequelize,
   Sequelize,
@@ -137,6 +142,17 @@ db.books.belongsToMany(db.wishList, {
   through: db.wishList_books,
   foreignKey: "book_id",
   as: "wishLists",
+});
+
+db.user.belongsToMany(db.books, {
+  through: db.user_viewed_book,
+  foreignKey: "user_id",
+  as: "viewedBooks",
+});
+db.books.belongsToMany(db.user, {
+  through: db.user_viewed_book,
+  foreignKey: "book_id",
+  as: "usersViewed",
 });
 
 module.exports = db;
